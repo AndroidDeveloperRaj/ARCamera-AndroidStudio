@@ -8,10 +8,10 @@ import android.opengl.GLSurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.simoncherry.arcamera.filter.AFilter;
-import com.simoncherry.arcamera.filter.GroupFilter;
-import com.simoncherry.arcamera.filter.NoFilter;
-import com.simoncherry.arcamera.filter.TextureFilter;
+import com.simoncherry.arcamera.filter.camera.AFilter;
+import com.simoncherry.arcamera.filter.camera.GroupFilter;
+import com.simoncherry.arcamera.filter.camera.NoFilter;
+import com.simoncherry.arcamera.filter.camera.TextureFilter;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;

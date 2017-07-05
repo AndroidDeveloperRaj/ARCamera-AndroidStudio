@@ -1,4 +1,4 @@
-package com.simoncherry.arcamera.filter;
+package com.simoncherry.arcamera.filter.camera;
 
 import android.content.res.Resources;
 import android.graphics.SurfaceTexture;

@@ -20,6 +20,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(CameraActivity.class);
             }
         });
+
+        findViewById(R.id.btn_image_renderer).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(ImageActivity.class);
+            }
+        });
     }
 
     private void startActivity(Class<?> cls) {
