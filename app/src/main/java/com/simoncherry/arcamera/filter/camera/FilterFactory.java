@@ -12,6 +12,8 @@ public class FilterFactory {
 
     public static AFilter getFilter(Resources res, int menuId) {
         switch (menuId) {
+            case R.id.menu_camera_beauty:
+                return new BeautyFilter(res);
             case R.id.menu_camera_gray:
                 return new GrayFilter(res);
             case R.id.menu_camera_binary:
