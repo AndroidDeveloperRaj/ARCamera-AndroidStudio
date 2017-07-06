@@ -16,6 +16,20 @@ public class FilterFactory {
                 return new GrayFilter(res);
             case R.id.menu_camera_binary:
                 return new BinaryFilter(res);
+            case R.id.menu_camera_cool:
+                return new CoolFilter(res);
+            case R.id.menu_camera_warm:
+                return new WarmFilter(res);
+            case R.id.menu_camera_negative:
+                return new NegativeFilter(res);
+            case R.id.menu_camera_blur:
+                return new BlurFilter(res);
+            case R.id.menu_camera_mosaic:
+                return new MosaicFilter(res);
+            case R.id.menu_camera_emboss:
+                return new EmbossFilter(res);
+            case R.id.menu_camera_mag:
+                return new MagFilter(res);
             default:
                 return new NoFilter(res);
         }
