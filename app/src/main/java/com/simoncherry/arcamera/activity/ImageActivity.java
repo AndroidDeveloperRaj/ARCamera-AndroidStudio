@@ -37,7 +37,7 @@ public class ImageActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_img_filter,menu);
+        getMenuInflater().inflate(R.menu.menu_img_filter, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -70,6 +70,9 @@ public class ImageActivity extends AppCompatActivity {
                 break;
             case R.id.mMagn:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.MAGN));
+                break;
+            case R.id.mBinary:
+                mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.BINARY));
                 break;
 
         }
