@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -38,6 +39,7 @@ public class CameraActivity extends AppCompatActivity implements FrameCallback {
     private TextureController mController;
     private MyRenderer mRenderer;
     private int cameraId = 1;
+    private int mCurrentFilterId = R.id.menu_camera_default;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,21 @@ public class CameraActivity extends AppCompatActivity implements FrameCallback {
             }
             setContentView();
             mSurfaceView = (SurfaceView) findViewById(R.id.mSurface);
+            mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            mController.clearFilter();
+                            break;
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_CANCEL:
+                            mController.addFilter(FilterFactory.getFilter(getResources(), mCurrentFilterId));
+                            break;
+                    }
+                    return true;
+                }
+            });
 
 //            onFilterSet(mController);
             mController.setFrameCallback(720, 1280, CameraActivity.this);
@@ -107,11 +124,11 @@ public class CameraActivity extends AppCompatActivity implements FrameCallback {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.menu_camera_switch) {
+        mCurrentFilterId = item.getItemId();
+        if (mCurrentFilterId == R.id.menu_camera_switch) {
             switchCamera();
         } else {
-            setSingleFilter(mController, itemId);
+            setSingleFilter(mController, mCurrentFilterId);
         }
         return super.onOptionsItemSelected(item);
     }
