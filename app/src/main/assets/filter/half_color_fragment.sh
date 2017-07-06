@@ -63,7 +63,10 @@ void main(){
             }
             gl_FragColor = vec4(binary, binary, binary, nColor.a);
 
-        } else {
+        } else if (vChangeType == 6) {
+            gl_FragColor = vec4(1.0 - nColor.r, 1.0 - nColor.g, 1.0 - nColor.b, nColor.a);
+
+        }else {
             gl_FragColor = nColor;
         }
 

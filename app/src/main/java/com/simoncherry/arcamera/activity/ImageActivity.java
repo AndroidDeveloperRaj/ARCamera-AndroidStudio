@@ -74,6 +74,9 @@ public class ImageActivity extends AppCompatActivity {
             case R.id.mBinary:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.BINARY));
                 break;
+            case R.id.mNegative:
+                mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.NEGATIVE));
+                break;
 
         }
         mGLView.getRender().getFilter().setHalf(isHalf);

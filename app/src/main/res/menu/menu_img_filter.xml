@@ -18,4 +18,6 @@
         android:title="放大镜" />
     <item android:id="@+id/mBinary"
         android:title="黑白" />
+    <item android:id="@+id/mNegative"
+        android:title="底片" />
 </menu>
