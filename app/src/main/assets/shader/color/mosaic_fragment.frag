@@ -2,7 +2,7 @@ precision mediump float;
 varying vec2 textureCoordinate;
 uniform sampler2D vTexture;
 
-uniform vec2 uMosaicSize;
+uniform vec2 uMosaicSize;  // vec2(8.0, 8.0)
 
 
 void main() {

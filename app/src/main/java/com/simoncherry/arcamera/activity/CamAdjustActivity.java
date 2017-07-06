@@ -20,7 +20,7 @@ public class CamAdjustActivity extends CameraActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.e("wuwang","process:" + progress);
                 AFilter aFilter = mController.getLastFilter();
-                aFilter.setFlag(progress / 20 + 1);
+                aFilter.setFlag(progress);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}

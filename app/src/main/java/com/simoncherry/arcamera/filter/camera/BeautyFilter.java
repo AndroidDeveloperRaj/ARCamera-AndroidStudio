@@ -25,7 +25,7 @@ public class BeautyFilter extends AFilter {
 
     public BeautyFilter(Resources res) {
         super(res);
-        setFlag(4);
+        setFlag(3);
     }
 
     @Override

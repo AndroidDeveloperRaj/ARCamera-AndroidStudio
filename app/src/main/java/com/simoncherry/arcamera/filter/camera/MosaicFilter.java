@@ -15,7 +15,7 @@ public class MosaicFilter extends AFilter {
 
     public MosaicFilter(Resources mRes) {
         super(mRes);
-        setFlag(4);
+        setFlag(3);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class MosaicFilter extends AFilter {
     @Override
     public void setFlag(int flag) {
         super.setFlag(flag);
-        setParams(flag * 2.0f);
+        setParams((flag + 1) * 2.0f);  // flag取中间值3时，size取8.0f
     }
 
     private void setParams(float value) {
