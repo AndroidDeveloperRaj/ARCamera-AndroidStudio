@@ -11,6 +11,9 @@ varying vec4 gPosition;
 varying vec2 aCoordinate;
 varying vec4 aPos;
 
+const vec2 TexSize = vec2(100.0, 100.0);
+
+
 void modifyColor(vec4 color){
     color.r = max(min(color.r, 1.0), 0.0);
     color.g = max(min(color.g, 1.0), 0.0);
@@ -66,7 +69,17 @@ void main(){
         } else if (vChangeType == 6) {
             gl_FragColor = vec4(1.0 - nColor.r, 1.0 - nColor.g, 1.0 - nColor.b, nColor.a);
 
-        }else {
+        } else if (vChangeType == 7) {
+            vec2 tex = aCoordinate;
+            vec2 upLeftUV = vec2(tex.x - 1.0 / TexSize.x, tex.y - 1.0 / TexSize.y);
+            vec4 curColor = texture2D(vTexture, aCoordinate);
+            vec4 upLeftColor = texture2D(vTexture, upLeftUV);
+            vec4 delColor = curColor - upLeftColor;
+            float h = 0.3 * delColor.x + 0.59 * delColor.y + 0.11 * delColor.z;
+            vec4 bkColor = vec4(0.5, 0.5, 0.5, 1.0);
+            gl_FragColor = vec4(h, h, h, 0.0) + bkColor;
+
+        } else {
             gl_FragColor = nColor;
         }
 

@@ -38,7 +38,8 @@ public class ColorFilter extends AFilter {
         BLUR(3, new float[]{0.006f, 0.004f, 0.002f}),
         MAGN(4, new float[]{0.0f, 0.0f, 0.4f}),
         BINARY(5, new float[]{0.0f, 0.0f, 0.0f}),
-        NEGATIVE(6, new float[]{0.0f, 0.0f, 0.0f})
+        NEGATIVE(6, new float[]{0.0f, 0.0f, 0.0f}),
+        EMBOSS(7, new float[]{0.0f, 0.0f, 0.0f}),
         ;
 
         private int vChangeType;

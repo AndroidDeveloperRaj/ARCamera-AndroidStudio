@@ -20,4 +20,6 @@
         android:title="黑白" />
     <item android:id="@+id/mNegative"
         android:title="底片" />
+    <item android:id="@+id/mEmboss"
+        android:title="浮雕" />
 </menu>
