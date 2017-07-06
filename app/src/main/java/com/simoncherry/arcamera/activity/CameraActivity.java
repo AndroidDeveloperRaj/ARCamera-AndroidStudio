@@ -17,6 +17,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.simoncherry.arcamera.R;
+import com.simoncherry.arcamera.filter.camera.BinaryFilter;
+import com.simoncherry.arcamera.filter.camera.FilterFactory;
 import com.simoncherry.arcamera.gl.Camera1Renderer;
 import com.simoncherry.arcamera.gl.Camera2Renderer;
 import com.simoncherry.arcamera.gl.FrameCallback;
@@ -99,17 +101,31 @@ public class CameraActivity extends AppCompatActivity implements FrameCallback {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("切换摄像头").setTitle("切换摄像头").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        getMenuInflater().inflate(R.menu.menu_camera_filter, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        String name=item.getTitle().toString();
-        if(name.equals("切换摄像头")){
+        int itemId = item.getItemId();
+        if (itemId == R.id.menu_camera_switch) {
             switchCamera();
+        } else {
+            setSingleFilter(mController, itemId);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void onFilterSet(TextureController controller) {
+//        GrayFilter grayFilter = new GrayFilter(getResources());
+//        controller.addFilter(grayFilter);
+        BinaryFilter binaryFilter = new BinaryFilter(getResources());
+        controller.addFilter(binaryFilter);
+    }
+
+    private void setSingleFilter(TextureController controller, int menuId) {
+        controller.clearFilter();
+        controller.addFilter(FilterFactory.getFilter(getResources(), menuId));
     }
 
     public void switchCamera(){

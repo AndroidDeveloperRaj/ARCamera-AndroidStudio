@@ -184,6 +184,10 @@ public class TextureController implements GLSurfaceView.Renderer {
         mGroupFilter.addFilter(filter);
     }
 
+    public void clearFilter() {
+        mGroupFilter.clearAll();
+    }
+
     public void setShowType(int type){
         this.mShowType = type;
         if(mWindowSize.x > 0 && mWindowSize.y > 0){

@@ -44,7 +44,7 @@ public class ImageActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.mDeal:
+            case R.id.menu_img_deal:
                 isHalf = !isHalf;
                 if (isHalf) {
                     item.setTitle("处理一半");
@@ -53,34 +53,34 @@ public class ImageActivity extends AppCompatActivity {
                 }
                 mGLView.getRender().refresh();
                 break;
-            case R.id.mDefault:
+            case R.id.menu_img_default:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.NONE));
                 break;
-            case R.id.mGray:
+            case R.id.menu_img_gray:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.GRAY));
                 break;
-            case R.id.mCool:
+            case R.id.menu_img_cool:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.COOL));
                 break;
-            case R.id.mWarm:
+            case R.id.menu_img_warn:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.WARM));
                 break;
-            case R.id.mBlur:
+            case R.id.menu_img_blur:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.BLUR));
                 break;
-            case R.id.mMagn:
+            case R.id.menu_img_mag:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.MAGN));
                 break;
-            case R.id.mBinary:
+            case R.id.menu_img_binary:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.BINARY));
                 break;
-            case R.id.mNegative:
+            case R.id.menu_img_negative:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.NEGATIVE));
                 break;
-            case R.id.mEmboss:
+            case R.id.menu_img_emboss:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.EMBOSS));
                 break;
-            case R.id.mMosaic:
+            case R.id.menu_img_mosaic:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.MOSAIC));
                 break;
 
