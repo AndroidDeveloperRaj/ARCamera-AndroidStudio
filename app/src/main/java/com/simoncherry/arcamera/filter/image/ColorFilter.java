@@ -40,6 +40,7 @@ public class ColorFilter extends AFilter {
         BINARY(5, new float[]{0.0f, 0.0f, 0.0f}),
         NEGATIVE(6, new float[]{0.0f, 0.0f, 0.0f}),
         EMBOSS(7, new float[]{0.0f, 0.0f, 0.0f}),
+        MOSAIC(8, new float[]{0.0f, 0.0f, 0.0f}),
         ;
 
         private int vChangeType;

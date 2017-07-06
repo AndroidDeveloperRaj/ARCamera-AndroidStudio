@@ -11,8 +11,6 @@ varying vec4 gPosition;
 varying vec2 aCoordinate;
 varying vec4 aPos;
 
-const vec2 TexSize = vec2(100.0, 100.0);
-
 
 void modifyColor(vec4 color){
     color.r = max(min(color.r, 1.0), 0.0);
@@ -70,14 +68,25 @@ void main(){
             gl_FragColor = vec4(1.0 - nColor.r, 1.0 - nColor.g, 1.0 - nColor.b, nColor.a);
 
         } else if (vChangeType == 7) {
+            vec2 TexSize = vec2(100.0, 100.0);
+            vec4 bkColor = vec4(0.5, 0.5, 0.5, 1.0);
             vec2 tex = aCoordinate;
+
             vec2 upLeftUV = vec2(tex.x - 1.0 / TexSize.x, tex.y - 1.0 / TexSize.y);
             vec4 curColor = texture2D(vTexture, aCoordinate);
             vec4 upLeftColor = texture2D(vTexture, upLeftUV);
             vec4 delColor = curColor - upLeftColor;
             float h = 0.3 * delColor.x + 0.59 * delColor.y + 0.11 * delColor.z;
-            vec4 bkColor = vec4(0.5, 0.5, 0.5, 1.0);
             gl_FragColor = vec4(h, h, h, 0.0) + bkColor;
+
+        } else if (vChangeType == 8) {
+            vec2 TexSize = vec2(400.0, 400.0);
+            vec2 mosaicSize = vec2(8.0, 8.0);
+            vec2 intXY = vec2(aCoordinate.x * TexSize.x, aCoordinate.y * TexSize.y);
+            vec2 XYMosaic = vec2(floor(intXY.x / mosaicSize.x) * mosaicSize.x, floor(intXY.y / mosaicSize.y) * mosaicSize.y);
+            vec2 UVMosaic = vec2(XYMosaic.x / TexSize.x, XYMosaic.y / TexSize.y);
+            vec4 color = texture2D(vTexture, UVMosaic);
+            gl_FragColor = color;
 
         } else {
             gl_FragColor = nColor;

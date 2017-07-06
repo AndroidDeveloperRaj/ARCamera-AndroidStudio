@@ -80,6 +80,9 @@ public class ImageActivity extends AppCompatActivity {
             case R.id.mEmboss:
                 mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.EMBOSS));
                 break;
+            case R.id.mMosaic:
+                mGLView.setFilter(new ContrastColorFilter(this, ColorFilter.Filter.MOSAIC));
+                break;
 
         }
         mGLView.getRender().getFilter().setHalf(isHalf);

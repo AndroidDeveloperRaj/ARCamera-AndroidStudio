@@ -22,4 +22,6 @@
         android:title="底片" />
     <item android:id="@+id/mEmboss"
         android:title="浮雕" />
+    <item android:id="@+id/mMosaic"
+        android:title="马赛克" />
 </menu>
