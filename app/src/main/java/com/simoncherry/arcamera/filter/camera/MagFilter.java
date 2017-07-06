@@ -10,10 +10,13 @@ import android.opengl.GLES20;
 public class MagFilter extends AFilter {
 
     private int glHUxy;
+    private int gScale;
     private float uXY;
+    private float uScale;
 
     public MagFilter(Resources mRes) {
         super(mRes);
+        setFlag(3);
     }
 
     @Override
@@ -22,6 +25,7 @@ public class MagFilter extends AFilter {
                 "shader/color/mag_fragment.frag");
 
         glHUxy = GLES20.glGetUniformLocation(mProgram, "uXY");
+        gScale = GLES20.glGetUniformLocation(mProgram, "uScale");
     }
 
     @Override
@@ -39,5 +43,17 @@ public class MagFilter extends AFilter {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(mHPosition);
         GLES20.glDisableVertexAttribArray(mHCoord);
+    }
+
+    @Override
+    public void setFlag(int flag) {
+        super.setFlag(flag);
+        uScale = flag * 0.1f + 0.2f;
+    }
+
+    @Override
+    protected void onSetExpandData() {
+        super.onSetExpandData();
+        GLES20.glUniform1f(gScale, uScale);
     }
 }
