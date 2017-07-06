@@ -184,6 +184,10 @@ public class TextureController implements GLSurfaceView.Renderer {
         mGroupFilter.addFilter(filter);
     }
 
+    public AFilter getLastFilter() {
+        return mGroupFilter.getLastFilter();
+    }
+
     public void clearFilter() {
         mGroupFilter.clearAll();
     }

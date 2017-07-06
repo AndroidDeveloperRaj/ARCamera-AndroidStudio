@@ -38,6 +38,10 @@ public class GroupFilter extends AFilter{
         mFilterQueue.add(filter);
     }
 
+    public AFilter getLastFilter() {
+        return mFilters.size() <= 0 ? null : mFilters.get(mFilters.size()-1);
+    }
+
     public boolean removeFilter(AFilter filter){
         boolean b = mFilters.remove(filter);
         if(b){

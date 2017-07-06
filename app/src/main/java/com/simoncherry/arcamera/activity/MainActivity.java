@@ -14,6 +14,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewById(R.id.btn_image_renderer).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(ImageActivity.class);
+            }
+        });
+
         findViewById(R.id.btn_camera_renderer).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -21,10 +28,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btn_image_renderer).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btn_cam_adjust).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(ImageActivity.class);
+                startActivity(CamAdjustActivity.class);
             }
         });
     }

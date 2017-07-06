@@ -36,10 +36,10 @@ import java.nio.ByteBuffer;
 public class CameraActivity extends AppCompatActivity implements FrameCallback {
     private Context mContext;
     private SurfaceView mSurfaceView;
-    private TextureController mController;
+    protected TextureController mController;
     private MyRenderer mRenderer;
     private int cameraId = 1;
-    private int mCurrentFilterId = R.id.menu_camera_default;
+    protected int mCurrentFilterId = R.id.menu_camera_default;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

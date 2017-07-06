@@ -8,6 +8,13 @@
     tools:context="com.simoncherry.arcamera.activity.MainActivity">
 
     <Button
+        android:id="@+id/btn_image_renderer"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:text="Image Renderer"/>
+
+    <Button
         android:id="@+id/btn_camera_renderer"
         android:layout_width="200dp"
         android:layout_height="50dp"
@@ -15,9 +22,9 @@
         android:text="Camera Renderer"/>
 
     <Button
-        android:id="@+id/btn_image_renderer"
+        android:id="@+id/btn_cam_adjust"
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_gravity="center"
-        android:text="Image Renderer"/>
+        android:text="Camera Adjust Filter"/>
 </LinearLayout>
