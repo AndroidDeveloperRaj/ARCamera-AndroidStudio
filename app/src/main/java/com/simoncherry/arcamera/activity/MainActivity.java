@@ -34,6 +34,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(CamAdjustActivity.class);
             }
         });
+
+        findViewById(R.id.btn_faceu_test).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(CameraTrackActivity.class);
+            }
+        });
     }
 
     private void startActivity(Class<?> cls) {
