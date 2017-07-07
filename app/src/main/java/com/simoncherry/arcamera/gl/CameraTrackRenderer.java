@@ -87,7 +87,7 @@ public class CameraTrackRenderer implements MyRenderer {
         nv21 = new byte[PREVIEW_WIDTH * PREVIEW_HEIGHT * 2];
 
         tracker = new STMobileMultiTrack106(context, ST_MOBILE_TRACKING_ENABLE_FACE_ACTION);
-        int max = 40;
+        int max = 1;
         tracker.setMaxDetectableFaces(max);
     }
 

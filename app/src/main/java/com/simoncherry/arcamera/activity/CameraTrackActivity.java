@@ -26,8 +26,10 @@ import android.widget.Toast;
 import com.sensetime.stmobileapi.STMobileFaceAction;
 import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
+import com.simoncherry.arcamera.filter.camera.AFilter;
 import com.simoncherry.arcamera.filter.camera.BinaryFilter;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
+import com.simoncherry.arcamera.filter.camera.LandmarkFilter;
 import com.simoncherry.arcamera.gl.Camera1Renderer;
 import com.simoncherry.arcamera.gl.CameraTrackRenderer;
 import com.simoncherry.arcamera.gl.FrameCallback;
@@ -90,13 +92,14 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                                                 final float pitch, final float roll, final float yaw,
                                                 final int eye_dist, final int id, final int eyeBlink, final int mouthAh,
                                                 final int headYaw, final int headPitch, final int browJump) {
-                        final Bitmap bitmap = handleDrawLandMark(faceActions, orientation);
+                        setLandmarkFilter(faceActions, orientation);
+//                        final Bitmap bitmap = handleDrawLandMark(faceActions, orientation);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (bitmap != null) {
-                                    mIvLandmark.setImageBitmap(bitmap);
-                                }
+//                                if (bitmap != null) {
+//                                    mIvLandmark.setImageBitmap(bitmap);
+//                                }
                                 mTrackText.setText("TRACK: " + value + " MS"
                                         + "\nPITCH: " + pitch + "\nROLL: " + roll + "\nYAW: " + yaw + "\nEYE_DIST:" + eye_dist);
                                 mActionText.setText("ID:" + id + "\nEYE_BLINK:" + eyeBlink + "\nMOUTH_AH:"
@@ -319,5 +322,33 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
             }
         }
         return null;
+    }
+
+    private void setLandmarkFilter(STMobileFaceAction[] faceActions, int orientation) {
+        AFilter aFilter = mController.getLastFilter();
+        if(aFilter != null && aFilter instanceof LandmarkFilter && faceActions != null) {
+            for(int i=0; i<faceActions.length; i++) {
+                Log.i("Test", "detect faces: "+ faceActions[i].getFace().getRect().toString());
+            }
+
+            boolean rotate270 = orientation == 270;
+            for (STMobileFaceAction r : faceActions) {
+                Log.i("Test", "-->> face count = "+faceActions.length);
+                PointF[] points = r.getFace().getPointsArray();
+                float[] landmarkX = new float[points.length];
+                float[] landmarkY = new float[points.length];
+                for (int i = 0; i < points.length; i++) {
+                    if (rotate270) {
+                        points[i] = STUtils.RotateDeg270(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
+                    } else {
+                        points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
+                    }
+//                    Log.e("Test", "-->> face landmark [" + i + "] : " + points[i]);
+                    landmarkX[i] = points[i].x;
+                    landmarkY[i] = points[i].y;
+                }
+                ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
+            }
+        }
     }
 }

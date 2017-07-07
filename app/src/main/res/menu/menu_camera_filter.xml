@@ -6,6 +6,10 @@
         android:title="切换摄像头" />
     <item android:id="@+id/menu_camera_default"
         android:title="原图" />
+    <item android:id="@+id/menu_camera_point"
+        android:title="描点" />
+    <item android:id="@+id/menu_camera_landmark"
+        android:title="关键点" />
     <item android:id="@+id/menu_camera_beauty"
         android:title="美颜" />
     <item android:id="@+id/menu_camera_gray"

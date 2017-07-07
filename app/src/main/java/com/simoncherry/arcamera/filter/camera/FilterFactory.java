@@ -36,6 +36,10 @@ public class FilterFactory {
                 ZipPkmAnimationFilter zipPkmAnimationFilter = new ZipPkmAnimationFilter(res);
                 zipPkmAnimationFilter.setAnimation("assets/etczip/dragon.zip");
                 return zipPkmAnimationFilter;
+            case R.id.menu_camera_point:
+                return new DrawPointFilter(res);
+            case R.id.menu_camera_landmark:
+                return new LandmarkFilter(res);
             default:
                 return new NoFilter(res);
         }
