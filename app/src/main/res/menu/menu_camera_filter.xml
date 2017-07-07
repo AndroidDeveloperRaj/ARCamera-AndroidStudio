@@ -26,4 +26,6 @@
         android:title="马赛克" />
     <item android:id="@+id/menu_camera_mag"
         android:title="放大镜" />
+    <item android:id="@+id/menu_camera_anim"
+        android:title="动画" />
 </menu>
