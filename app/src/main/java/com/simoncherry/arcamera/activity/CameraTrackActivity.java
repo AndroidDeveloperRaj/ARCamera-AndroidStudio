@@ -344,8 +344,11 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                         points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
                     }
 //                    Log.e("Test", "-->> face landmark [" + i + "] : " + points[i]);
-                    landmarkX[i] = points[i].x;
-                    landmarkY[i] = points[i].y;
+//                    landmarkX[i] = points[i].x;
+//                    landmarkY[i] = points[i].y;
+
+                    landmarkX[i] = 1 - points[i].x / 480.0f;
+                    landmarkY[i] = points[i].y / 640.0f;
                 }
                 ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
             }
