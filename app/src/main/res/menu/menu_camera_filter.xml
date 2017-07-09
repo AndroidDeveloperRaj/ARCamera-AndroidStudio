@@ -12,6 +12,8 @@
         android:title="关键点" />
     <item android:id="@+id/menu_camera_big_eye"
         android:title="大眼" />
+    <item android:id="@+id/menu_camera_small_eye"
+        android:title="小眼" />
     <item android:id="@+id/menu_camera_beauty"
         android:title="美颜" />
     <item android:id="@+id/menu_camera_gray"

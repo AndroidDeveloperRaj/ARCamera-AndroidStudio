@@ -46,6 +46,8 @@ public class FilterFactory {
                 return new LandmarkFilter(res);
             case R.id.menu_camera_big_eye:
                 return new BigEyeFilter(res);
+            case R.id.menu_camera_small_eye:
+                return new SmallEyeFilter(res);
             default:
                 return new NoFilter(res);
         }
