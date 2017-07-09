@@ -34,6 +34,8 @@ public class FilterFactory {
                 return new MagFilter(res);
             case R.id.menu_camera_mirror:
                 return new MirrorFilter(res);
+            case R.id.menu_camera_fisheye:
+                return new FishEyeFilter(res);
             case R.id.menu_camera_anim:
                 ZipPkmAnimationFilter zipPkmAnimationFilter = new ZipPkmAnimationFilter(res);
                 zipPkmAnimationFilter.setAnimation("assets/etczip/dragon.zip");
