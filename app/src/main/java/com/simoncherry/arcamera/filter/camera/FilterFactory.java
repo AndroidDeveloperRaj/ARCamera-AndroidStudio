@@ -32,6 +32,8 @@ public class FilterFactory {
                 return new EmbossFilter(res);
             case R.id.menu_camera_mag:
                 return new MagFilter(res);
+            case R.id.menu_camera_mirror:
+                return new MirrorFilter(res);
             case R.id.menu_camera_anim:
                 ZipPkmAnimationFilter zipPkmAnimationFilter = new ZipPkmAnimationFilter(res);
                 zipPkmAnimationFilter.setAnimation("assets/etczip/dragon.zip");

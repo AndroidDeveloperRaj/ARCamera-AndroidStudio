@@ -28,6 +28,8 @@
         android:title="浮雕" />
     <item android:id="@+id/menu_camera_mosaic"
         android:title="马赛克" />
+    <item android:id="@+id/menu_camera_mirror"
+        android:title="镜像" />
     <item android:id="@+id/menu_camera_mag"
         android:title="放大镜" />
     <item android:id="@+id/menu_camera_anim"
