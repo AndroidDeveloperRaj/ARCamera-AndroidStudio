@@ -48,6 +48,8 @@ public class FilterFactory {
                 return new BigEyeFilter(res);
             case R.id.menu_camera_small_eye:
                 return new SmallEyeFilter(res);
+            case R.id.menu_camera_fat_face:
+                return new FatFaceFilter(res);
             default:
                 return new NoFilter(res);
         }
