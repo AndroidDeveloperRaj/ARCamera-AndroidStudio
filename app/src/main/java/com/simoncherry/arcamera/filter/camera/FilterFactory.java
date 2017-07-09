@@ -44,6 +44,8 @@ public class FilterFactory {
                 return new DrawPointFilter(res);
             case R.id.menu_camera_landmark:
                 return new LandmarkFilter(res);
+            case R.id.menu_camera_big_eye:
+                return new BigEyeFilter(res);
             default:
                 return new NoFilter(res);
         }

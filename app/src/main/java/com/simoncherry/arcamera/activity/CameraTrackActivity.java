@@ -27,7 +27,6 @@ import com.sensetime.stmobileapi.STMobileFaceAction;
 import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.filter.camera.AFilter;
-import com.simoncherry.arcamera.filter.camera.BinaryFilter;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
 import com.simoncherry.arcamera.filter.camera.LandmarkFilter;
 import com.simoncherry.arcamera.gl.Camera1Renderer;
@@ -130,7 +129,6 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                 }
             });
 
-//            onFilterSet(mController);
             mController.setFrameCallback(720, 1280, CameraTrackActivity.this);
             mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
@@ -180,13 +178,6 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
             setSingleFilter(mController, mCurrentFilterId);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    protected void onFilterSet(TextureController controller) {
-//        GrayFilter grayFilter = new GrayFilter(getResources());
-//        controller.addFilter(grayFilter);
-        BinaryFilter binaryFilter = new BinaryFilter(getResources());
-        controller.addFilter(binaryFilter);
     }
 
     private void setSingleFilter(TextureController controller, int menuId) {

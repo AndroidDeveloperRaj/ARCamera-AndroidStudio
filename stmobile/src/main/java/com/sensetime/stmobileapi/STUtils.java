@@ -194,12 +194,15 @@ public class STUtils {
 		paint.setStrokeWidth(strokeWidth);
 		paint.setStyle(Style.STROKE);
 
+		int i = 0;
 		for (PointF point : points) {
 			PointF p = point;
 			if(frontCamera) {
 				p.x = width - p.x;
 			}
-			canvas.drawPoint(p.x, p.y, paint);
+			//canvas.drawPoint(p.x, p.y, paint);
+			canvas.drawText(String.valueOf(i), p.x, p.y, paint);
+			i++;
 		}
 	}
 
