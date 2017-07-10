@@ -91,7 +91,7 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                                                 final float pitch, final float roll, final float yaw,
                                                 final int eye_dist, final int id, final int eyeBlink, final int mouthAh,
                                                 final int headYaw, final int headPitch, final int browJump) {
-                        setLandmarkFilter(faceActions, orientation);
+                        setLandmarkFilter(faceActions, orientation, mouthAh);
 //                        final Bitmap bitmap = handleDrawLandMark(faceActions, orientation);
                         runOnUiThread(new Runnable() {
                             @Override
@@ -315,7 +315,7 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
         return null;
     }
 
-    private void setLandmarkFilter(STMobileFaceAction[] faceActions, int orientation) {
+    private void setLandmarkFilter(STMobileFaceAction[] faceActions, int orientation, int mouthAh) {
         AFilter aFilter = mController.getLastFilter();
         if(aFilter != null && aFilter instanceof LandmarkFilter && faceActions != null) {
             for(int i=0; i<faceActions.length; i++) {
@@ -342,6 +342,7 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                     landmarkY[i] = points[i].y / 640.0f;
                 }
                 ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
+                ((LandmarkFilter) aFilter).setMouthOpen(mouthAh);
             }
         }
     }
