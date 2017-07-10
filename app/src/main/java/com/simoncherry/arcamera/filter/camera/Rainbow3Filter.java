@@ -2,6 +2,7 @@ package com.simoncherry.arcamera.filter.camera;
 
 import android.content.res.Resources;
 import android.opengl.GLES20;
+import android.util.Log;
 
 /**
  * Created by Simon on 2017/7/6.
@@ -9,18 +10,22 @@ import android.opengl.GLES20;
 
 public class Rainbow3Filter extends LandmarkFilter {
 
+    private final static String TAG = Rainbow3Filter.class.getSimpleName();
+
     private int gLandmarkX;
     private int gLandmarkY;
     private int gStarPosX;
     private int gStarPosY;
     private int gMouthOpen;
     private int gGlobalTime;
+    private int gRainbowHeight;
 
     private float[] uLandmarkX;
     private float[] uLandmarkY;
     private float[] uStarPosX;
     private float[] uStarPosY;
     private int isMouthOpen = 0;
+    private float uRainbowHeight = 0.0f;
 
     public Rainbow3Filter(Resources mRes) {
         super(mRes);
@@ -41,6 +46,7 @@ public class Rainbow3Filter extends LandmarkFilter {
         gStarPosY = GLES20.glGetUniformLocation(mProgram, "uStarPosY");
         gMouthOpen = GLES20.glGetUniformLocation(mProgram, "uMouthOpen");
         gGlobalTime = GLES20.glGetUniformLocation(mProgram, "iGlobalTime");
+        gRainbowHeight = GLES20.glGetUniformLocation(mProgram, "uRainbowHeight");
     }
 
     @Override
@@ -54,6 +60,9 @@ public class Rainbow3Filter extends LandmarkFilter {
 
     public void setMouthOpen(int isOpen) {
         isMouthOpen = isOpen;
+        if (isOpen == 0) {
+            uRainbowHeight = 0.0f;
+        }
     }
 
     @Override
@@ -67,5 +76,11 @@ public class Rainbow3Filter extends LandmarkFilter {
 
         float time = ((float) (System.currentTimeMillis() - START_TIME)) / 1000.0f;
         GLES20.glUniform1f(gGlobalTime, time);
+
+        if (uRainbowHeight < 1.0f) {
+            uRainbowHeight += 0.2f;
+        }
+        Log.i(TAG, "uRainbowHeight: " + uRainbowHeight);
+        GLES20.glUniform1f(gRainbowHeight, uRainbowHeight);
     }
 }

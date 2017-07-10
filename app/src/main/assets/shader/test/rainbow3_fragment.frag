@@ -10,6 +10,8 @@ uniform float iGlobalTime;
 uniform float uStarPosX[7];
 uniform float uStarPosY[7];
 
+uniform float uRainbowHeight;
+
 vec4 rgb(float a, float b, float c) {
     return vec4(a/255.0, b/255.0, c/255.0, 1.0);
 }
@@ -33,7 +35,7 @@ vec4 drawStar(vec2 pos, float x, float y) {
 vec4 getRainbow(vec2 uv, float wave, float width, float startX, float startY, float shadowY, vec2 changePos) {
     vec4 color;
     if (uMouthOpen == 1) {
-        if (uv.y >= startY) {
+        if (uv.y >= startY && uv.y < uRainbowHeight) {
             if (wave >= -width*7. && wave < -width*5.) color = rgb(255.0, 0.0, 0.0);
             else if (wave >= -width*5. && wave < -width*3.) color = rgb(255.0, 165.0, 0.0);
             else if (wave >= -width*3. && wave < -width) color = rgb(255.0, 255.0, 0.0);
