@@ -54,6 +54,8 @@ public class FilterFactory {
                 return new RainbowFilter(res);
             case R.id.menu_camera_rainbow2:
                 return new Rainbow2Filter(res);
+            case R.id.menu_camera_rainbow3:
+                return new Rainbow3Filter(res);
             default:
                 return new NoFilter(res);
         }

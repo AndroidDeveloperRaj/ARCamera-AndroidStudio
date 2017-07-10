@@ -20,6 +20,8 @@
         android:title="吐彩虹" />
     <item android:id="@+id/menu_camera_rainbow2"
         android:title="吐彩虹2" />
+    <item android:id="@+id/menu_camera_rainbow3"
+        android:title="吐彩虹3" />
     <item android:id="@+id/menu_camera_beauty"
         android:title="美颜" />
     <item android:id="@+id/menu_camera_gray"
