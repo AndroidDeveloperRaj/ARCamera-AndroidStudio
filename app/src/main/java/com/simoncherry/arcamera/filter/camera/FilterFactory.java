@@ -52,6 +52,8 @@ public class FilterFactory {
                 return new FatFaceFilter(res);
             case R.id.menu_camera_rainbow:
                 return new RainbowFilter(res);
+            case R.id.menu_camera_rainbow2:
+                return new Rainbow2Filter(res);
             default:
                 return new NoFilter(res);
         }

@@ -12,7 +12,7 @@ vec4 rgb(float a, float b, float c) {
     return vec4(a/255.0, b/255.0, c/255.0, 1.0);
 }
 
-vec4 getRainbow(vec2 uv, float wave, float width, float startY, float shadowY) {
+vec4 getRainbow(vec2 uv, float wave, float width, float startY, float shadowY, vec2 changePos) {
     vec4 color;
     if (uMouthOpen == 1 && uv.y >= startY) {
 
@@ -30,17 +30,28 @@ vec4 getRainbow(vec2 uv, float wave, float width, float startY, float shadowY) {
 
         else if (wave >= width*5. && wave < width*7.) color = rgb(139.0, 0.0, 255.0);
 
-        else color = texture2D( vTexture, uv );
+        else color = texture2D(vTexture, uv + changePos);
 
         if (wave >= -width*7. && wave < width*7. && uv.y < shadowY) {
             color = color - vec4(0.3, 0.3, 0.3, 1.0);
         }
 
     } else {
-        color = texture2D( vTexture, uv );
+        if (uMouthOpen == 1) color = texture2D(vTexture, uv + changePos);
+        else color = texture2D(vTexture, uv);
     }
 
     return color;
+}
+
+vec2 getModifiedPoint(vec2 actualUV, vec2 pointUV, float radius, float strength){
+	vec2 vecToPoint = pointUV - actualUV;
+	float distToPoint = length(vecToPoint);
+
+	float mag = (1.0 - (distToPoint / radius)) * strength;
+	mag *= step(distToPoint, radius);
+
+	return mag * vecToPoint;
 }
 
 void mainImage( out vec4 O, in vec2 U ) {
@@ -48,14 +59,26 @@ void mainImage( out vec4 O, in vec2 U ) {
     vec2 uv = U.xy / R.xy;
     U = 10.* (U-R/2.) / R.x;
 
-    float width = abs(uLandmarkX[99] - uLandmarkX[97]);
-    vec2 pos = vec2(uLandmarkX[98], (uLandmarkY[96] + uLandmarkY[100])*0.5);
-    vec2 vecToPoint = pos - uv;
+    float rainbowWidth = abs(uLandmarkX[99] - uLandmarkX[97]);
+    vec2 mouth = vec2(uLandmarkX[98], (uLandmarkY[96] + uLandmarkY[98])*0.5);
 
     float amp = 0.1;
-    float wave = amp * sin(U.y- iGlobalTime*10.) -U.x + (pos.x * 2. -1.)* 5.;
+    float sinWave = amp * sin(U.y- iGlobalTime*10.) -U.x + (mouth.x * 2. -1.)* 5.;
 
-    O = getRainbow(uv, wave, width, pos.y, (uLandmarkY[101] + uLandmarkY[103])*0.5);
+    float eyeRadius = abs(uLandmarkY[72] - uLandmarkY[73]) * 2.0;
+    float eyeStrength = 1.0;
+    float mouthRadius = abs(uLandmarkX[100] - uLandmarkX[96]);
+    float mouthStrength = 1.0;
+
+    vec2 eye1 = vec2(uLandmarkX[74], uLandmarkY[74]);
+    vec2 eye2 = vec2(uLandmarkX[77], uLandmarkY[77]);
+
+    vec2 changePos =
+        getModifiedPoint(uv, eye1, eyeRadius, eyeStrength) +
+        getModifiedPoint(uv, eye2, eyeRadius, eyeStrength) +
+        getModifiedPoint(uv, mouth, mouthRadius, mouthStrength);
+
+    O = getRainbow(uv, sinWave, rainbowWidth, mouth.y, (uLandmarkY[101] + uLandmarkY[103])*0.5, changePos);
 }
 
 void main() {
