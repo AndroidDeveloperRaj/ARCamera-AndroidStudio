@@ -121,7 +121,7 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
                                                 final int eye_dist, final int id, final int eyeBlink, final int mouthAh,
                                                 final int headYaw, final int headPitch, final int browJump) {
                         handle3dModelRotation(pitch, roll, yaw);
-                        handle3dModelTransition(faceActions, orientation, eye_dist);
+                        handle3dModelTransition(faceActions, orientation, eye_dist, yaw);
                         setLandmarkFilter(faceActions, orientation, mouthAh);
 //                        final Bitmap bitmap = handleDrawLandMark(faceActions, orientation);
                         runOnUiThread(new Runnable() {
@@ -405,7 +405,7 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
         ((My3DRenderer) mISurfaceRenderer).setAccelerometerValues(roll+90, -yaw, -pitch);
     }
 
-    private void handle3dModelTransition(STMobileFaceAction[] faceActions, int orientation, int eye_dist) {
+    private void handle3dModelTransition(STMobileFaceAction[] faceActions, int orientation, int eye_dist, float yaw) {
         boolean rotate270 = orientation == 270;
         STMobileFaceAction r = faceActions[0];
         Rect rect;
@@ -420,7 +420,10 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
         float centerY = (rect.bottom + rect.top)/2.0f;
         float x = (centerX / PREVIEW_HEIGHT) * 2.0f - 1.0f;
         float y = (centerY / PREVIEW_WIDTH) * 2.0f - 1.0f;
-        float tmp = (eye_dist * 0.000001f - 1115) * 0.04f;   // 1115xxxxxx ~ 1140xxxxxx - > 0 ~ 25 -> 0 ~ 1
+        //float tmp = (eye_dist * 0.000001f - 1115) * 0.04f;   // 1115xxxxxx ~ 1140xxxxxx - > 0 ~ 25 -> 0 ~ 1
+        float tmp = eye_dist * 0.000001f - 1115;  // 1115xxxxxx ~ 1140xxxxxx - > 0 ~ 25
+        tmp = (float) (tmp / Math.cos(Math.PI*yaw/180));  // 根据旋转角度还原两眼距离
+        tmp = tmp * 0.04f;  // 0 ~ 25 -> 0 ~ 1
         float z = tmp * 3.0f + 1.0f;
         Log.e(TAG, "transition: x= " + x + ", y= " + y + ", z= " + z);
 
@@ -444,12 +447,28 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
         @Override
         protected void initScene() {
             try {
-                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.v_mask_obj);
+                // V字仇杀队面具
+//                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.v_mask_obj);
+//                parser.parse();
+//                mMask = parser.getParsedObject();
+//                mMask.setScale(0.15f);
+//                mMask.setY(0.01f);  // 上正下负
+//                mMask.getMaterial().enableLighting(false);
+                // 马里奥帽子
+//                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.mario_hat_obj);
+//                parser.parse();
+//                mMask = parser.getParsedObject();
+//                mMask.setScale(0.19f);
+//                mMask.setY(-0.1f);  // 上正下负
+//                mMask.setZ(-0.35f);
+//                mMask.setRotZ(-15.0f);
+                // 老虎鼻子
+                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.tiger_nose_obj);
                 parser.parse();
                 mMask = parser.getParsedObject();
-                mMask.setScale(0.15f);
-                mMask.setY(0.01f);  // 上正下负
-                mMask.getMaterial().enableLighting(false);
+                mMask.setScale(0.002f);
+                mMask.setY(-0.2f);
+                mMask.setZ(0.4f);
 
                 mContainer = new Object3D();
                 mContainer.addChild(mMask);
