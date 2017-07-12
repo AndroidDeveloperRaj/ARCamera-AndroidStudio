@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.simoncherry.arcamera"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -29,4 +29,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     compile project(':stmobile')
+    compile project(':rajawali')
 }
