@@ -16,5 +16,6 @@ Screenshot
 -----------------------------------
 ### 吐彩虹
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_1.gif)
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_2.gif)
 
 > Written with [StackEdit](https://stackedit.io/).
