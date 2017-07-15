@@ -77,7 +77,7 @@ public class TextureFilter extends AFilter  {
         GLES20.glViewport(0,0,width,height);
         mFilter.setTextureId(mCameraTexture[0]);
         mFilter.draw();
-        Log.e("wuwang","textureFilter draw");
+        Log.i("wuwang","textureFilter draw");
         EasyGlUtils.unBindFrameBuffer();
 
         if(a){

@@ -48,6 +48,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(Camera3DActivity.class);
             }
         });
+
+        findViewById(R.id.btn_cam_record).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(CameraRecordActivity.class);
+            }
+        });
     }
 
     private void startActivity(Class<?> cls) {
