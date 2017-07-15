@@ -207,6 +207,15 @@ public class SurfaceView extends GLSurfaceView implements ISurface {
             }
         });
 
+        mRendererDelegate.setOnTakeScreenshotListener2(new RendererDelegate.OnTakeScreenshotListener2() {
+            @Override
+            public void onTakeScreenshot(int[] pixels) {
+                if (onTakeScreenshotListener2 != null) {
+                    onTakeScreenshotListener2.onTakeScreenshot(pixels);
+                }
+            }
+        });
+
         // Render mode cant be set until the GL thread exists
         setRenderMode(mRenderMode);
         onPause(); // We want to halt the surface view until we are ready
@@ -223,6 +232,16 @@ public class SurfaceView extends GLSurfaceView implements ISurface {
         this.onTakeScreenshotListener = onTakeScreenshotListener;
     }
 
+    public interface OnTakeScreenshotListener2 {
+        void onTakeScreenshot(int[] pixels);
+    }
+
+    private OnTakeScreenshotListener2 onTakeScreenshotListener2;
+
+    public void setOnTakeScreenshotListener2(OnTakeScreenshotListener2 onTakeScreenshotListener2) {
+        this.onTakeScreenshotListener2 = onTakeScreenshotListener2;
+    }
+
     @Override
     public void requestRenderUpdate() {
         requestRender();
@@ -237,6 +256,22 @@ public class SurfaceView extends GLSurfaceView implements ISurface {
         }
     }
 
+    public void startRecord() {
+        Log.e(TAG, "startRecord");
+        if (mRendererDelegate != null) {
+            Log.e(TAG, "mRendererDelegate.startRecord()");
+            mRendererDelegate.startRecord();
+        }
+    }
+
+    public void stopRecord() {
+        Log.e(TAG, "stopRecord");
+        if (mRendererDelegate != null) {
+            Log.e(TAG, "mRendererDelegate.stopRecord()");
+            mRendererDelegate.stopRecord();
+        }
+    }
+
     /**
      * Delegate used to translate between {@link GLSurfaceView.Renderer} and {@link ISurfaceRenderer}.
      *
@@ -248,12 +283,21 @@ public class SurfaceView extends GLSurfaceView implements ISurface {
         final ISurfaceRenderer mRenderer; // The renderer
         // TODO
         protected boolean mIsScreenshot = false;
+        protected boolean mIsRecord = false;
         private int mWidth = 1;
         private int mHeight = 1;
 
         public void takeScreenshot() {
             Log.e(TAG, "mIsScreenshot = true");
             mIsScreenshot = true;
+        }
+
+        public void startRecord() {
+            mIsRecord = true;
+        }
+
+        public void stopRecord() {
+            mIsRecord = false;
         }
 
         public RendererDelegate(ISurfaceRenderer renderer, SurfaceView surfaceView) {
@@ -280,38 +324,44 @@ public class SurfaceView extends GLSurfaceView implements ISurface {
         @Override
         public void onDrawFrame(GL10 gl) {
             mRenderer.onRenderFrame(gl);
-            if (mIsScreenshot) {
+            if (mIsScreenshot || mIsRecord) {
                 Log.e(TAG, "onDrawFrame mIsScreenshot");
-                mIsScreenshot = false;
-//                long time = System.currentTimeMillis();
-//                String name = String.valueOf(time);
-//                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Rajawali/";
-//                File folder = new File(path);
-//                if (!folder.exists()) {
-//                    folder.mkdirs();
-//                }
-//
-//                try {
-//                    ScreenGrab.saveAsImage(0, 0, mWidth, mHeight, path + name + ".png", Bitmap.CompressFormat.PNG, 90);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-                if (onTakeScreenshotListener != null) {
-                    Bitmap bitmap = ScreenGrab.getPixelsFromBuffer(0, 0, mWidth, mHeight);
-                    onTakeScreenshotListener.onTakeScreenshot(bitmap);
+                if (mIsScreenshot) {
+                    if (onTakeScreenshotListener != null) {
+                        Bitmap bitmap = ScreenGrab.getPixelsFromBuffer(0, 0, mWidth, mHeight);
+                        onTakeScreenshotListener.onTakeScreenshot(bitmap);
+                    }
+                    mIsScreenshot = false;
+                }
+
+                if (mIsRecord) {
+                    if (onTakeScreenshotListener2 != null) {
+                        int[] pixels = ScreenGrab.getPixelsArrayFromBuffer(0, 0, mWidth, mHeight);
+                        onTakeScreenshotListener2.onTakeScreenshot(pixels);
+                    }
                 }
             }
         }
 
         // TODO
-        public interface OnTakeScreenshotListener {
+        interface OnTakeScreenshotListener {
             void onTakeScreenshot(Bitmap bitmap);
         }
 
         private OnTakeScreenshotListener onTakeScreenshotListener;
 
-        public void setOnTakeScreenshotListener(OnTakeScreenshotListener onTakeScreenshotListener) {
+        void setOnTakeScreenshotListener(OnTakeScreenshotListener onTakeScreenshotListener) {
             this.onTakeScreenshotListener = onTakeScreenshotListener;
+        }
+
+        interface OnTakeScreenshotListener2 {
+            void onTakeScreenshot(int[] pixels);
+        }
+
+        private OnTakeScreenshotListener2 onTakeScreenshotListener2;
+
+        void setOnTakeScreenshotListener2(OnTakeScreenshotListener2 onTakeScreenshotListener2) {
+            this.onTakeScreenshotListener2 = onTakeScreenshotListener2;
         }
     }
 }

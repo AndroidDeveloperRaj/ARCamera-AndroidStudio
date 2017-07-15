@@ -117,4 +117,36 @@ public class ScreenGrab {
 
 		return Bitmap.createBitmap(bt, width, height, Bitmap.Config.ARGB_8888);
 	}
+
+	public static int[] getPixelsArrayFromBuffer(int x, int y, int width, int height) {
+//		int b[] = new int[width * (y + height)];
+//		int bt[] = new int[width * height];
+//		IntBuffer ib = IntBuffer.wrap(b);
+//		ib.position(0);
+//		GLES20.glReadPixels(x, y, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ib);
+//
+//		for (int i = 0, k = 0; i < height; i++, k++) {
+//			for (int j = 0; j < width; j++) {
+//				int pix = b[i * width + j];
+//				int pb = (pix >> 16) & 0xff;
+//				int pr = (pix << 16) & 0x00ff0000;
+//				int pix1 = (pix & 0xff00ff00) | pr | pb;
+//				bt[(height - k - 1) * width + j] = pix1;
+//			}
+//		}
+//
+//		return bt;
+
+		final IntBuffer pixelBuffer = IntBuffer.allocate(width * height);
+		GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer);
+
+		final int[] pixelMirroredArray = new int[width * height];
+		int[] pixelArray = pixelBuffer.array();
+		// rotate 180 deg with x axis because y is reversed
+		for (int i = 0; i < height; i++) {
+			System.arraycopy(pixelArray, i * width, pixelMirroredArray, (height - i - 1) * width, width);
+		}
+
+		return pixelMirroredArray;
+	}
 }
