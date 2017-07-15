@@ -93,6 +93,7 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
 
         mRenderSurface = (org.rajawali3d.view.SurfaceView) findViewById(R.id.rajwali_surface);
         ((org.rajawali3d.view.SurfaceView) mRenderSurface).setTransparent(true);
+        ((org.rajawali3d.view.SurfaceView) mRenderSurface).getHolder().setFixedSize(720, 1280);
         mISurfaceRenderer = new My3DRenderer(this);
         mRenderSurface.setSurfaceRenderer(mISurfaceRenderer);
         ((View) mRenderSurface).bringToFront();
@@ -258,16 +259,7 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
                 bitmap.copyPixelsFromBuffer(b);
 
                 if (mRajawaliBitmap != null) {
-                    Log.e(TAG, "mRajawaliBitmap != null");
-                    int srcW = bitmap.getWidth();
-                    int srcH = bitmap.getHeight();
-                    int markW = mRajawaliBitmap.getWidth();
-                    int markH = mRajawaliBitmap.getHeight();
-                    float scale = (float)(markH) / srcH;
-                    int scaleW = (int) (srcW * scale);
-                    mRajawaliBitmap = Bitmap.createBitmap(mRajawaliBitmap, (markW-scaleW)/2, 0, scaleW, markH);
-                    mRajawaliBitmap = Bitmap.createScaledBitmap(mRajawaliBitmap, srcW, srcH, false);
-
+                    Log.i(TAG, "mRajawaliBitmap != null");
                     Canvas canvas = new Canvas(bitmap);
                     canvas.drawBitmap(mRajawaliBitmap, 0, 0, null);
                     canvas.save(Canvas.ALL_SAVE_FLAG);
@@ -275,7 +267,7 @@ public class Camera3DActivity extends AppCompatActivity implements FrameCallback
                     mRajawaliBitmap.recycle();
                     mRajawaliBitmap = null;
                 } else {
-                    Log.e(TAG, "mRajawaliBitmap == null");
+                    Log.i(TAG, "mRajawaliBitmap == null");
                 }
 
                 saveBitmap(bitmap);
