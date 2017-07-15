@@ -33,6 +33,7 @@
         <activity android:name=".activity.CameraTrackActivity" />
         <activity android:name=".activity.Camera3DActivity" />
         <activity android:name=".activity.CameraRecordActivity" />
+        <activity android:name=".activity.Record3DActivity" />
     </application>
 
 </manifest>
