@@ -18,4 +18,7 @@ Screenshot
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_1.gif)
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_2.gif)
 
+### 眼睛冒火
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_3.gif)
+
 > Written with [StackEdit](https://stackedit.io/).
