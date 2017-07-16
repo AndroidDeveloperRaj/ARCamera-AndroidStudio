@@ -19,9 +19,8 @@ vec2 getModifiedPoint(vec2 actualUV, vec2 pointUV, float radius, float strength)
 void main() {
     vec2 uv = textureCoordinate;
 
-    float faceHeight = (uLandmarkY[45] + uLandmarkY[87]) / 2.0;
-    vec2 leftFace = vec2(uLandmarkX[11], faceHeight);
-    vec2 rightFace = vec2(uLandmarkX[21], faceHeight);
+    vec2 leftFace = vec2(uLandmarkX[11], uLandmarkY[6]);
+    vec2 rightFace = vec2(uLandmarkX[21], uLandmarkY[26]);
 
     float faceRadius = abs(uLandmarkX[44] - uLandmarkX[3]) * 0.5;
     float faceStrength = 1.0;

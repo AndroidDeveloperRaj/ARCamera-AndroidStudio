@@ -50,6 +50,8 @@ public class FilterFactory {
                 return new SmallEyeFilter(res);
             case R.id.menu_camera_fire_eye:
                 return new FireEyeFilter(res);
+            case R.id.menu_camera_flush:
+                return new FlushFilter(res);
             case R.id.menu_camera_fat_face:
                 return new FatFaceFilter(res);
             case R.id.menu_camera_rainbow:
