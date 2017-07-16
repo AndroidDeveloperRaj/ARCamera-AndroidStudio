@@ -74,8 +74,13 @@ public class Rainbow3Filter extends LandmarkFilter {
         GLES20.glUniform1fv(gStarPosY, uStarPosY.length, uStarPosY, 0);
         GLES20.glUniform1i(gMouthOpen, isMouthOpen);
 
-        float time = ((float) (System.currentTimeMillis() - START_TIME)) / 1000.0f;
-        GLES20.glUniform1f(gGlobalTime, time);
+        long currentTime = System.currentTimeMillis();
+        float globalTime = ((float) (currentTime - START_TIME)) / 1000.0f;
+        if (globalTime >= 20.0f) {  // TODO 大于20秒后，基于时间变化描绘的图像有点奇怪（不平滑，出现锯齿），大于50秒后就非常明显
+            setStartTime(currentTime);
+        }
+        Log.e(TAG, "gGlobalTime: " + globalTime);
+        GLES20.glUniform1f(gGlobalTime, globalTime);
 
         if (uRainbowHeight < 1.0f) {
             uRainbowHeight += 0.2f;

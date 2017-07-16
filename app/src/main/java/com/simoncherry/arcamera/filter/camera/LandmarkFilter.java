@@ -16,9 +16,9 @@ public class LandmarkFilter extends AFilter {
     private float[] uLandmarkY;
     private int isMouthOpen = 0;
 
-    static long START_TIME = System.currentTimeMillis();
+    long START_TIME = System.currentTimeMillis();
 
-    public static void setStartTime(long startTime) {
+    public void setStartTime(long startTime) {
         START_TIME = startTime;
     }
 
