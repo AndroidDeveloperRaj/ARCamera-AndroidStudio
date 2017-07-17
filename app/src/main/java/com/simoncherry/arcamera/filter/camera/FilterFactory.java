@@ -62,6 +62,8 @@ public class FilterFactory {
                 return new Rainbow2Filter(res);
             case R.id.menu_camera_rainbow3:
                 return new Rainbow3Filter(res);
+            case R.id.menu_camera_ghost:
+                return new GhostFilter(res);
             default:
                 return new NoFilter(res);
         }
