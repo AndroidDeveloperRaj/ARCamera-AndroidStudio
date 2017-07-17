@@ -16,6 +16,8 @@
         android:title="小眼" />
     <item android:id="@+id/menu_camera_fire_eye"
         android:title="眼睛冒火" />
+    <item android:id="@+id/menu_camera_black_eye"
+        android:title="黑眼圈" />
     <item android:id="@+id/menu_camera_flush"
         android:title="红晕" />
     <item android:id="@+id/menu_camera_fat_face"
