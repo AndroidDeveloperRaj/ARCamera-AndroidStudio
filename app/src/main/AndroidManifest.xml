@@ -34,6 +34,8 @@
         <activity android:name=".activity.Camera3DActivity" />
         <activity android:name=".activity.CameraRecordActivity" />
         <activity android:name=".activity.Record3DActivity" />
+        <activity android:name=".activity.DynamicModelActivity" />
+        <activity android:name=".activity.DynamicModel2Activity" />
     </application>
 
 </manifest>

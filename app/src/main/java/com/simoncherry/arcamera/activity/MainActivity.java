@@ -62,6 +62,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(Record3DActivity.class);
             }
         });
+
+        findViewById(R.id.btn_dynamic_model).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(DynamicModel2Activity.class);
+            }
+        });
     }
 
     private void startActivity(Class<?> cls) {
