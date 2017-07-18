@@ -21,4 +21,7 @@ Screenshot
 ### 眼睛冒火
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_3.gif)
 
+### 恶灵
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_4.gif)
+
 > Written with [StackEdit](https://stackedit.io/).
