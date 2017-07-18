@@ -24,6 +24,8 @@ import android.widget.Toast;
 import com.sensetime.stmobileapi.STMobileFaceAction;
 import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
+import com.simoncherry.arcamera.codec.CameraRecorder;
+import com.simoncherry.arcamera.custom.CircularProgressView;
 import com.simoncherry.arcamera.filter.camera.AFilter;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
 import com.simoncherry.arcamera.filter.camera.LandmarkFilter;
@@ -49,13 +51,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class DynamicModel2Activity extends AppCompatActivity implements FrameCallback {
+public class DynamicModel3Activity extends AppCompatActivity implements FrameCallback {
 
-    private final static String TAG = DynamicModel2Activity.class.getSimpleName();
+    private final static String TAG = DynamicModel3Activity.class.getSimpleName();
+    private final static int IMAGE_WIDTH = 720;
+    private final static int IMAGE_HEIGHT = 1280;
+    private final static int VIDEO_WIDTH = 384;
+    private final static int VIDEO_HEIGHT = 640;
 
     private SurfaceView mSurfaceView;
     private TextView mTrackText, mActionText;
@@ -63,23 +72,31 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
     private Context mContext;
     protected TextureController mController;
     private MyRenderer mRenderer;
+    private static Accelerometer mAccelerometer;
 
     private ISurface mRenderSurface;
     private ISurfaceRenderer mISurfaceRenderer;
     private Bitmap mRajawaliBitmap = null;
+    private int[] mRajawaliPixels = null;
+    private List<DynamicPoint> mDynamicPoints = new ArrayList<>();
 
     private int cameraId = 1;
     protected int mCurrentFilterId = R.id.menu_camera_default;
 
-    private static Accelerometer mAccelerometer;
-
-    private List<DynamicPoint> mDynamicPoints = new ArrayList<>();
+    private CircularProgressView mCapture;
+    private CameraRecorder mp4Recorder;
+    private ExecutorService mExecutor;
+    private long time;
+    private long maxTime = 20000;
+    private long timeStep = 50;
+    private boolean recordFlag = false;
+    private int mFrameType = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = DynamicModel2Activity.this;
+        mContext = DynamicModel3Activity.this;
 
         mAccelerometer = new Accelerometer(this);
         mAccelerometer.start();
@@ -89,13 +106,14 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
     }
 
     protected void setContentView(){
-        setContentView(R.layout.activity_cam_3d);
+        setContentView(R.layout.activity_record_3d);
         mTrackText = (TextView) findViewById(R.id.tv_track);
         mActionText = (TextView) findViewById(R.id.tv_action);
+        mCapture = (CircularProgressView) findViewById(R.id.mCapture);
 
         mRenderSurface = (org.rajawali3d.view.SurfaceView) findViewById(R.id.rajwali_surface);
         ((org.rajawali3d.view.SurfaceView) mRenderSurface).setTransparent(true);
-        ((org.rajawali3d.view.SurfaceView) mRenderSurface).getHolder().setFixedSize(720, 1280);
+        ((org.rajawali3d.view.SurfaceView) mRenderSurface).getHolder().setFixedSize(VIDEO_WIDTH, VIDEO_HEIGHT);
         mISurfaceRenderer = new My3DRenderer(this);
         mRenderSurface.setSurfaceRenderer(mISurfaceRenderer);
         ((View) mRenderSurface).bringToFront();
@@ -108,11 +126,46 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
                 mController.takePhoto();
             }
         });
+
+        ((org.rajawali3d.view.SurfaceView) mRenderSurface).setOnTakeScreenshotListener2(new org.rajawali3d.view.SurfaceView.OnTakeScreenshotListener2() {
+            @Override
+            public void onTakeScreenshot(int[] pixels) {
+                Log.e(TAG, "onTakeScreenshot(byte[] pixels)");
+                mRajawaliPixels = pixels;
+            }
+        });
+
+        mCapture.setTotal((int)maxTime);
+        mCapture.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        recordFlag=false;
+                        time=System.currentTimeMillis();
+                        mCapture.postDelayed(captureTouchRunnable, 500);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        recordFlag = false;
+                        if(System.currentTimeMillis()-time<500){
+                            mFrameType = 0;
+                            mCapture.removeCallbacks(captureTouchRunnable);
+                            mController.setFrameCallback(IMAGE_WIDTH, IMAGE_HEIGHT, DynamicModel3Activity.this);
+                            //mController.takePhoto();
+                            ((org.rajawali3d.view.SurfaceView) mRenderSurface).takeScreenshot();
+                        }
+                        break;
+                }
+                return false;
+            }
+        });
     }
 
     private Runnable initViewRunnable = new Runnable() {
         @Override
         public void run() {
+            mExecutor = Executors.newSingleThreadExecutor();
+
             mController = new TextureController(mContext);
             // 设置数据源
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -157,7 +210,7 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
                 }
             });
 
-            mController.setFrameCallback(720, 1280, DynamicModel2Activity.this);
+            mController.setFrameCallback(720, 1280, DynamicModel3Activity.this);
             mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
                 public void surfaceCreated(SurfaceHolder holder) {
@@ -185,7 +238,7 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
                 new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(DynamicModel2Activity.this, "没有获得必要的权限", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(DynamicModel3Activity.this, "没有获得必要的权限", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 });
@@ -247,36 +300,60 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
 
     @Override
     public void onFrame(final byte[] bytes, long time) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Bitmap bitmap = Bitmap.createBitmap(720,1280, Bitmap.Config.ARGB_8888);
-                ByteBuffer b = ByteBuffer.wrap(bytes);
-                bitmap.copyPixelsFromBuffer(b);
-
-                if (mRajawaliBitmap != null) {
-                    Log.i(TAG, "mRajawaliBitmap != null");
-                    Canvas canvas = new Canvas(bitmap);
-                    canvas.drawBitmap(mRajawaliBitmap, 0, 0, null);
-                    canvas.save(Canvas.ALL_SAVE_FLAG);
-                    canvas.restore();
-                    mRajawaliBitmap.recycle();
-                    mRajawaliBitmap = null;
-                } else {
-                    Log.i(TAG, "mRajawaliBitmap == null");
+        if (mp4Recorder != null && mFrameType == 1) {
+            if (mRajawaliPixels != null) {
+                final ByteBuffer buf = ByteBuffer.allocate(mRajawaliPixels.length * 4)
+                        .order(ByteOrder.LITTLE_ENDIAN);
+                buf.asIntBuffer().put(mRajawaliPixels);
+                mRajawaliPixels = null;
+                // FIXME -- 纯黑色部分的ARGB全是0，贴图中有纯黑色的地方就过滤掉了。非技术上的解决方法是改贴图。。。
+                byte[] tmpArray = buf.array();
+                for (int i=0; i<bytes.length; i+=4) {
+                    byte a = tmpArray[i];
+                    byte r = tmpArray[i+1];
+                    byte g = tmpArray[i+2];
+                    byte b = tmpArray[i+3];
+                    if (a != 0) {
+                        bytes[i] = a;
+                        bytes[i + 1] = r;
+                        bytes[i + 2] = g;
+                        bytes[i + 3] = b;
+                    }
                 }
-
-                saveBitmap(bitmap);
-                bitmap.recycle();
             }
-        }).start();
+            mp4Recorder.feedData(bytes, time);
+        } else {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap bitmap = Bitmap.createBitmap(IMAGE_WIDTH,IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+                    ByteBuffer b = ByteBuffer.wrap(bytes);
+                    bitmap.copyPixelsFromBuffer(b);
+
+                    if (mRajawaliBitmap != null) {
+                        Log.i(TAG, "mRajawaliBitmap != null");
+                        mRajawaliBitmap = Bitmap.createScaledBitmap(mRajawaliBitmap, IMAGE_WIDTH, IMAGE_HEIGHT, false);
+                        Canvas canvas = new Canvas(bitmap);
+                        canvas.drawBitmap(mRajawaliBitmap, 0, 0, null);
+                        canvas.save(Canvas.ALL_SAVE_FLAG);
+                        canvas.restore();
+                        mRajawaliBitmap.recycle();
+                        mRajawaliBitmap = null;
+                    } else {
+                        Log.i(TAG, "mRajawaliBitmap == null");
+                    }
+
+                    saveBitmap(bitmap);
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+            }).start();
+        }
     }
 
     public void onClick(View view){
         switch (view.getId()){
             case R.id.mShutter:
-                //mController.takePhoto();
-                ((org.rajawali3d.view.SurfaceView) mRenderSurface).takeScreenshot();
                 break;
         }
     }
@@ -293,7 +370,7 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(DynamicModel2Activity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DynamicModel3Activity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
                 }
             });
             return;
@@ -312,7 +389,7 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(DynamicModel2Activity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DynamicModel3Activity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -526,5 +603,98 @@ public class DynamicModel2Activity extends AppCompatActivity implements FrameCal
                 this.mPoints = mPoints;
             }
         }
+    }
+
+    //录像的Runnable
+    private Runnable captureTouchRunnable=new Runnable() {
+        @Override
+        public void run() {
+            recordFlag=true;
+            mExecutor.execute(recordRunnable);
+        }
+    };
+
+    private Runnable recordRunnable=new Runnable() {
+
+        @Override
+        public void run() {
+            mFrameType = 1;
+            long timeCount = 0;
+            if(mp4Recorder == null){
+                mp4Recorder = new CameraRecorder();
+            }
+            long time = System.currentTimeMillis();
+            String savePath = getPath("video/", time + ".mp4");
+            mp4Recorder.setSavePath(getPath("video/", time+""), "mp4");
+            try {
+                mp4Recorder.prepare(VIDEO_WIDTH, VIDEO_HEIGHT);
+                mp4Recorder.start();
+                mController.setFrameCallback(VIDEO_WIDTH, VIDEO_HEIGHT, DynamicModel3Activity.this);
+                mController.startRecord();
+                ((org.rajawali3d.view.SurfaceView) mRenderSurface).startRecord();
+
+                while (timeCount <= maxTime && recordFlag){
+                    long start = System.currentTimeMillis();
+                    mCapture.setProcess((int)timeCount);
+                    long end = System.currentTimeMillis();
+                    try {
+                        Thread.sleep(timeStep - (end - start));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    timeCount += timeStep;
+                }
+                mController.stopRecord();
+                ((org.rajawali3d.view.SurfaceView) mRenderSurface).stopRecord();
+
+                if(timeCount < 2000){
+                    mp4Recorder.cancel();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //mCapture.setProcess(0);
+                            Toast.makeText(mContext, "录像时间太短了", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }else{
+                    mp4Recorder.stop();
+                    recordComplete(mFrameType, savePath);
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    private String getBaseFolder(){
+        String baseFolder=Environment.getExternalStorageDirectory()+"/OpenGLDemo/";
+        File f=new File(baseFolder);
+        if(!f.exists()){
+            boolean b=f.mkdirs();
+            if(!b){
+                baseFolder=getExternalFilesDir(null).getAbsolutePath()+"/";
+            }
+        }
+        return baseFolder;
+    }
+
+    //获取VideoPath
+    private String getPath(String path,String fileName){
+        String p= getBaseFolder()+path;
+        File f=new File(p);
+        if(!f.exists()&&!f.mkdirs()){
+            return getBaseFolder()+fileName;
+        }
+        return p+fileName;
+    }
+
+    private void recordComplete(int type, final String path){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mCapture.setProcess(0);
+                Toast.makeText(mContext,"文件保存路径："+path,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

@@ -36,6 +36,7 @@
         <activity android:name=".activity.Record3DActivity" />
         <activity android:name=".activity.DynamicModelActivity" />
         <activity android:name=".activity.DynamicModel2Activity" />
+        <activity android:name=".activity.DynamicModel3Activity" />
     </application>
 
 </manifest>
