@@ -5,7 +5,7 @@ AR相机
   
 在大神的开源项目基础上扩展了一些滤镜。
   
-比较能拿得出手的是吐彩虹滤镜。
+新增：动态人脸模型。
   
 Base on 
 ----------------------------------- 
@@ -18,10 +18,14 @@ Screenshot
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_1.gif)
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_2.gif)
 
-### 眼睛冒火
+### 眼睛冒火、恶灵
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_3.gif)
-
-### 恶灵
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_4.gif)
+
+### 换脸
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_5.gif)
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_6.gif)
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_7.gif)
+
 
 > Written with [StackEdit](https://stackedit.io/).
