@@ -1,4 +1,4 @@
-package com.simoncherry.arcamera.activity;
+package com.simoncherry.arcamera.ui.activity;
 
 import android.Manifest;
 import android.content.Context;
@@ -9,7 +9,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,7 +27,6 @@ import com.sensetime.stmobileapi.STMobileFaceAction;
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.codec.CameraRecorder;
 import com.simoncherry.arcamera.contract.ARCamContract;
-import com.simoncherry.arcamera.custom.CircularProgressView;
 import com.simoncherry.arcamera.filter.camera.AFilter;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
 import com.simoncherry.arcamera.filter.camera.LandmarkFilter;
@@ -34,15 +36,22 @@ import com.simoncherry.arcamera.gl.FrameCallback;
 import com.simoncherry.arcamera.gl.My3DRenderer;
 import com.simoncherry.arcamera.gl.MyRenderer;
 import com.simoncherry.arcamera.gl.TextureController;
+import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.presenter.ARCamPresenter;
+import com.simoncherry.arcamera.ui.adapter.OrnamentAdapter;
+import com.simoncherry.arcamera.ui.custom.CircularProgressView;
+import com.simoncherry.arcamera.ui.custom.CustomBottomSheet;
 import com.simoncherry.arcamera.util.Accelerometer;
 import com.simoncherry.arcamera.util.FileUtls;
+import com.simoncherry.arcamera.util.OrnamentFactory;
 import com.simoncherry.arcamera.util.PermissionUtils;
 
 import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.ISurface;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -102,6 +111,13 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     // 处理帧数据的标志位 0为拍照 1为录像
     private int mFrameType = 0;
 
+    // 装饰品列表
+    private CustomBottomSheet mOrnamentSheet;
+    private RecyclerView mRvOrnament;
+    private OrnamentAdapter mOrnamentAdapter;
+    private List<Ornament> mOrnaments;
+    private int mOrnamentId = -1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +139,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         initCaptureButton();
         initMenuButton();
         initCommonView();
+        initOrnamentSheet();
     }
 
     private void initSurfaceView() {
@@ -225,7 +242,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                         setSingleFilter(mController, mCurrentFilterId);
                         break;
                     case R.id.iv_ornament:
-                        Toast.makeText(mContext, "click ornament", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(mContext, "click ornament", Toast.LENGTH_SHORT).show();
+                        mOrnamentSheet.show();
                         break;
                     case R.id.iv_effect:
                         Toast.makeText(mContext, "click effect", Toast.LENGTH_SHORT).show();
@@ -246,6 +264,34 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private void initCommonView() {
         mTrackText = (TextView) findViewById(R.id.tv_track);
         mActionText = (TextView) findViewById(R.id.tv_action);
+    }
+
+    private void initOrnamentSheet() {
+        mOrnaments = new ArrayList<>();
+        mOrnamentAdapter = new OrnamentAdapter(mContext, mOrnaments);
+        mOrnamentAdapter.setOnItemClickListener(new OrnamentAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                mOrnamentSheet.dismiss();
+                mOrnamentId = position;
+                Ornament ornament = mOrnaments.get(mOrnamentId);
+                ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
+                ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
+            }
+        });
+
+        View sheetView = LayoutInflater.from(mContext)
+                .inflate(R.layout.layout_bottom_sheet, null);
+        mRvOrnament = (RecyclerView) sheetView.findViewById(R.id.rv_gallery);
+        mRvOrnament.setAdapter(mOrnamentAdapter);
+        mRvOrnament.setLayoutManager(new GridLayoutManager(mContext, 4));
+        mOrnamentSheet = new CustomBottomSheet(mContext);
+        mOrnamentSheet.setContentView(sheetView);
+        mOrnamentSheet.getWindow().findViewById(R.id.design_bottom_sheet)
+                .setBackgroundResource(android.R.color.transparent);
+
+        mOrnaments.addAll(OrnamentFactory.getPresetOrnament());
+        mOrnamentAdapter.notifyDataSetChanged();
     }
 
     // 初始化的Runnable

@@ -1,40 +1,30 @@
-package com.simoncherry.arcamera.activity;
+package com.simoncherry.arcamera.ui.activity;
 
 import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.PointF;
-import android.graphics.Rect;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sensetime.stmobileapi.STMobileFaceAction;
-import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
-import com.simoncherry.arcamera.filter.camera.AFilter;
+import com.simoncherry.arcamera.filter.camera.BinaryFilter;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
-import com.simoncherry.arcamera.filter.camera.LandmarkFilter;
 import com.simoncherry.arcamera.gl.Camera1Renderer;
-import com.simoncherry.arcamera.gl.CameraTrackRenderer;
+import com.simoncherry.arcamera.gl.Camera2Renderer;
 import com.simoncherry.arcamera.gl.FrameCallback;
 import com.simoncherry.arcamera.gl.MyRenderer;
 import com.simoncherry.arcamera.gl.TextureController;
-import com.simoncherry.arcamera.util.Accelerometer;
 import com.simoncherry.arcamera.util.PermissionUtils;
 
 import java.io.BufferedOutputStream;
@@ -43,39 +33,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class CameraTrackActivity extends AppCompatActivity implements FrameCallback {
-
-    private SurfaceView mSurfaceView;
-    private TextView mTrackText, mActionText;
-    private ImageView mIvLandmark;
-
+public class CameraActivity extends AppCompatActivity implements FrameCallback {
     private Context mContext;
+    private SurfaceView mSurfaceView;
     protected TextureController mController;
     private MyRenderer mRenderer;
-
     private int cameraId = 1;
     protected int mCurrentFilterId = R.id.menu_camera_default;
-
-    private static Accelerometer mAccelerometer;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = CameraTrackActivity.this;
-
-        mAccelerometer = new Accelerometer(this);
-        mAccelerometer.start();
-
+        mContext = CameraActivity.this;
         PermissionUtils.askPermission(this, new String[]{Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE}, 10, initViewRunnable);
     }
 
     protected void setContentView(){
-        setContentView(R.layout.activity_cam_track);
-        mTrackText = (TextView) findViewById(R.id.tv_track);
-        mActionText = (TextView) findViewById(R.id.tv_action);
-        mIvLandmark = (ImageView) findViewById(R.id.iv_landmark);
+        setContentView(R.layout.activity_camera);
     }
 
     private Runnable initViewRunnable = new Runnable() {
@@ -84,30 +59,7 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
             mController = new TextureController(mContext);
             // 设置数据源
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mRenderer = new CameraTrackRenderer(mContext, (CameraManager)getSystemService(CAMERA_SERVICE), mController, cameraId);
-                ((CameraTrackRenderer) mRenderer).setTrackCallBackListener(new CameraTrackRenderer.TrackCallBackListener() {
-                    @Override
-                    public void onTrackDetected(STMobileFaceAction[] faceActions, final int orientation, final int value,
-                                                final float pitch, final float roll, final float yaw,
-                                                final int eye_dist, final int id, final int eyeBlink, final int mouthAh,
-                                                final int headYaw, final int headPitch, final int browJump) {
-                        setLandmarkFilter(faceActions, orientation, mouthAh);
-//                        final Bitmap bitmap = handleDrawLandMark(faceActions, orientation);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                if (bitmap != null) {
-//                                    mIvLandmark.setImageBitmap(bitmap);
-//                                }
-                                mTrackText.setText("TRACK: " + value + " MS"
-                                        + "\nPITCH: " + pitch + "\nROLL: " + roll + "\nYAW: " + yaw + "\nEYE_DIST:" + eye_dist);
-                                mActionText.setText("ID:" + id + "\nEYE_BLINK:" + eyeBlink + "\nMOUTH_AH:"
-                                        + mouthAh + "\nHEAD_YAW:" + headYaw + "\nHEAD_PITCH:" + headPitch + "\nBROW_JUMP:" + browJump);
-                            }
-                        });
-                    }
-                });
-
+                mRenderer = new Camera2Renderer((CameraManager)getSystemService(CAMERA_SERVICE), mController, cameraId);
             }else{
                 mRenderer = new Camera1Renderer(mController, cameraId);
             }
@@ -129,7 +81,8 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                 }
             });
 
-            mController.setFrameCallback(720, 1280, CameraTrackActivity.this);
+//            onFilterSet(mController);
+            mController.setFrameCallback(720, 1280, CameraActivity.this);
             mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
                 public void surfaceCreated(SurfaceHolder holder) {
@@ -157,7 +110,7 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
                 new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(CameraTrackActivity.this, "没有获得必要的权限", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CameraActivity.this, "没有获得必要的权限", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 });
@@ -178,6 +131,13 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
             setSingleFilter(mController, mCurrentFilterId);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void onFilterSet(TextureController controller) {
+//        GrayFilter grayFilter = new GrayFilter(getResources());
+//        controller.addFilter(grayFilter);
+        BinaryFilter binaryFilter = new BinaryFilter(getResources());
+        controller.addFilter(binaryFilter);
     }
 
     private void setSingleFilter(TextureController controller, int menuId) {
@@ -251,7 +211,7 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(CameraTrackActivity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CameraActivity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
                 }
             });
             return;
@@ -270,80 +230,9 @@ public class CameraTrackActivity extends AppCompatActivity implements FrameCallb
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(CameraTrackActivity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(CameraActivity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
             }
         });
-    }
 
-    int PREVIEW_WIDTH = 640;
-    int PREVIEW_HEIGHT = 480;
-
-    private Bitmap handleDrawLandMark(STMobileFaceAction[] faceActions, int orientation) {
-        if(faceActions != null) {
-            for(int i=0; i<faceActions.length; i++) {
-                Log.i("Test", "detect faces: "+ faceActions[i].getFace().getRect().toString());
-            }
-
-            final Bitmap bitmap = Bitmap.createBitmap(PREVIEW_HEIGHT, PREVIEW_WIDTH, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-
-            boolean rotate270 = orientation == 270;
-            for (STMobileFaceAction r : faceActions) {
-                Log.i("Test", "-->> face count = "+faceActions.length);
-                Rect rect;
-                if (rotate270) {
-                    rect = STUtils.RotateDeg270(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                } else {
-                    rect = STUtils.RotateDeg90(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                }
-
-                PointF[] points = r.getFace().getPointsArray();
-                for (int i = 0; i < points.length; i++) {
-                    if (rotate270) {
-                        points[i] = STUtils.RotateDeg270(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    } else {
-                        points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    }
-                }
-                STUtils.drawFaceRect(canvas, rect, PREVIEW_HEIGHT,
-                        PREVIEW_WIDTH, cameraId == 1);
-                STUtils.drawPoints(canvas, points, PREVIEW_HEIGHT,
-                        PREVIEW_WIDTH, cameraId == 1);
-                return bitmap;
-            }
-        }
-        return null;
-    }
-
-    private void setLandmarkFilter(STMobileFaceAction[] faceActions, int orientation, int mouthAh) {
-        AFilter aFilter = mController.getLastFilter();
-        if(aFilter != null && aFilter instanceof LandmarkFilter && faceActions != null) {
-            for(int i=0; i<faceActions.length; i++) {
-                Log.i("Test", "detect faces: "+ faceActions[i].getFace().getRect().toString());
-            }
-
-            boolean rotate270 = orientation == 270;
-            for (STMobileFaceAction r : faceActions) {
-                Log.i("Test", "-->> face count = "+faceActions.length);
-                PointF[] points = r.getFace().getPointsArray();
-                float[] landmarkX = new float[points.length];
-                float[] landmarkY = new float[points.length];
-                for (int i = 0; i < points.length; i++) {
-                    if (rotate270) {
-                        points[i] = STUtils.RotateDeg270(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    } else {
-                        points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    }
-//                    Log.e("Test", "-->> face landmark [" + i + "] : " + points[i]);
-//                    landmarkX[i] = points[i].x;
-//                    landmarkY[i] = points[i].y;
-
-                    landmarkX[i] = 1 - points[i].x / 480.0f;
-                    landmarkY[i] = points[i].y / 640.0f;
-                }
-                ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
-                ((LandmarkFilter) aFilter).setMouthOpen(mouthAh);
-            }
-        }
     }
 }

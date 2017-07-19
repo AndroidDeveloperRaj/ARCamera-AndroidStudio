@@ -1,12 +1,10 @@
-package com.simoncherry.arcamera.activity;
+package com.simoncherry.arcamera.ui.activity;
 
 import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,7 +18,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +32,7 @@ import com.simoncherry.arcamera.gl.CameraTrackRenderer;
 import com.simoncherry.arcamera.gl.FrameCallback;
 import com.simoncherry.arcamera.gl.MyRenderer;
 import com.simoncherry.arcamera.gl.TextureController;
+import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.util.Accelerometer;
 import com.simoncherry.arcamera.util.PermissionUtils;
 
@@ -42,7 +40,6 @@ import org.rajawali3d.Geometry3D;
 import org.rajawali3d.Object3D;
 import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.loader.ParsingException;
-import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.ISurface;
@@ -53,17 +50,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DynamicModelActivity extends AppCompatActivity implements FrameCallback {
+public class DynamicModel2Activity extends AppCompatActivity implements FrameCallback {
 
-    private final static String TAG = DynamicModelActivity.class.getSimpleName();
+    private final static String TAG = DynamicModel2Activity.class.getSimpleName();
 
     private SurfaceView mSurfaceView;
     private TextView mTrackText, mActionText;
-    private ImageView mIvLandmark;
 
     private Context mContext;
     protected TextureController mController;
@@ -84,7 +79,7 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = DynamicModelActivity.this;
+        mContext = DynamicModel2Activity.this;
 
         mAccelerometer = new Accelerometer(this);
         mAccelerometer.start();
@@ -97,7 +92,6 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
         setContentView(R.layout.activity_cam_3d);
         mTrackText = (TextView) findViewById(R.id.tv_track);
         mActionText = (TextView) findViewById(R.id.tv_action);
-        mIvLandmark = (ImageView) findViewById(R.id.iv_landmark);
 
         mRenderSurface = (org.rajawali3d.view.SurfaceView) findViewById(R.id.rajwali_surface);
         ((org.rajawali3d.view.SurfaceView) mRenderSurface).setTransparent(true);
@@ -129,16 +123,10 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
                                                 final float pitch, final float roll, final float yaw,
                                                 final int eye_dist, final int id, final int eyeBlink, final int mouthAh,
                                                 final int headYaw, final int headPitch, final int browJump) {
-//                        handle3dModelRotation(pitch, roll, yaw);
-//                        handle3dModelTransition(faceActions, orientation, eye_dist, yaw);
                         setLandmarkFilter(faceActions, orientation, mouthAh);
-                        final Bitmap bitmap = handleDrawLandMark(faceActions, orientation);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (bitmap != null) {
-                                    mIvLandmark.setImageBitmap(bitmap);
-                                }
                                 mTrackText.setText("TRACK: " + value + " MS"
                                         + "\nPITCH: " + pitch + "\nROLL: " + roll + "\nYAW: " + yaw + "\nEYE_DIST:" + eye_dist);
                                 mActionText.setText("ID:" + id + "\nEYE_BLINK:" + eyeBlink + "\nMOUTH_AH:"
@@ -169,7 +157,7 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
                 }
             });
 
-            mController.setFrameCallback(720, 1280, DynamicModelActivity.this);
+            mController.setFrameCallback(720, 1280, DynamicModel2Activity.this);
             mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
                 public void surfaceCreated(SurfaceHolder holder) {
@@ -197,7 +185,7 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
                 new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(DynamicModelActivity.this, "没有获得必要的权限", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(DynamicModel2Activity.this, "没有获得必要的权限", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 });
@@ -305,7 +293,7 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(DynamicModelActivity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DynamicModel2Activity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
                 }
             });
             return;
@@ -324,7 +312,7 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(DynamicModelActivity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DynamicModel2Activity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -332,50 +320,9 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
     int PREVIEW_WIDTH = 640;
     int PREVIEW_HEIGHT = 480;
 
-    private Bitmap handleDrawLandMark(STMobileFaceAction[] faceActions, int orientation) {
-        if(faceActions != null) {
-            for(int i=0; i<faceActions.length; i++) {
-                Log.i("Test", "detect faces: "+ faceActions[i].getFace().getRect().toString());
-            }
-
-            final Bitmap bitmap = Bitmap.createBitmap(PREVIEW_HEIGHT, PREVIEW_WIDTH, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-
-            boolean rotate270 = orientation == 270;
-            for (STMobileFaceAction r : faceActions) {
-                Log.i("Test", "-->> face count = "+faceActions.length);
-                Rect rect;
-                if (rotate270) {
-                    rect = STUtils.RotateDeg270(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                } else {
-                    rect = STUtils.RotateDeg90(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                }
-
-                PointF[] points = r.getFace().getPointsArray();
-                for (int i = 0; i < points.length; i++) {
-                    if (rotate270) {
-                        points[i] = STUtils.RotateDeg270(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    } else {
-                        points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    }
-                }
-                STUtils.drawFaceRect(canvas, rect, PREVIEW_HEIGHT,
-                        PREVIEW_WIDTH, cameraId == 1);
-                STUtils.drawPoints(canvas, points, PREVIEW_HEIGHT,
-                        PREVIEW_WIDTH, cameraId == 1);
-                return bitmap;
-            }
-        }
-        return null;
-    }
-
     private void setLandmarkFilter(STMobileFaceAction[] faceActions, int orientation, int mouthAh) {
         AFilter aFilter = mController.getLastFilter();
-        if(aFilter != null && aFilter instanceof LandmarkFilter && faceActions != null) {
-            for(int i=0; i<faceActions.length; i++) {
-                Log.i("Test", "detect faces: "+ faceActions[i].getFace().getRect().toString());
-            }
-
+        if(faceActions != null) {
             boolean rotate270 = orientation == 270;
             for (STMobileFaceAction r : faceActions) {
                 Log.i("Test", "-->> face count = "+faceActions.length);
@@ -388,55 +335,21 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
                     } else {
                         points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
                     }
-//                    Log.e("Test", "-->> face landmark [" + i + "] : " + points[i]);
-//                    landmarkX[i] = points[i].x;
-//                    landmarkY[i] = points[i].y;
-
                     landmarkX[i] = 1 - points[i].x / 480.0f;
                     landmarkY[i] = points[i].y / 640.0f;
                 }
-                ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
-                ((LandmarkFilter) aFilter).setMouthOpen(mouthAh);
+                if (aFilter != null && aFilter instanceof LandmarkFilter) {
+                    ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
+                    ((LandmarkFilter) aFilter).setMouthOpen(mouthAh);
+                }
 
-                float[] fuckX = new float[landmarkX.length];
-                float[] fuckY = new float[landmarkY.length];
-                System.arraycopy(landmarkX, 0, fuckX, 0, landmarkX.length);
-                System.arraycopy(landmarkY, 0, fuckY, 0, landmarkY.length);
-                handleChangeModel(fuckX, fuckY);
+                float[] copyLandmarkX = new float[landmarkX.length];
+                float[] copyLandmarkY = new float[landmarkY.length];
+                System.arraycopy(landmarkX, 0, copyLandmarkX, 0, landmarkX.length);
+                System.arraycopy(landmarkY, 0, copyLandmarkY, 0, landmarkY.length);
+                handleChangeModel(copyLandmarkX, copyLandmarkY);
             }
         }
-    }
-
-    private void handle3dModelRotation(final float pitch, final float roll, final float yaw) {
-        ((My3DRenderer) mISurfaceRenderer).setAccelerometerValues(roll+90, -yaw, -pitch);
-    }
-
-    private void handle3dModelTransition(STMobileFaceAction[] faceActions, int orientation, int eye_dist, float yaw) {
-        boolean rotate270 = orientation == 270;
-        STMobileFaceAction r = faceActions[0];
-        Rect rect;
-        if (rotate270) {
-            rect = STUtils.RotateDeg270(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        } else {
-            rect = STUtils.RotateDeg90(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        }
-        //Log.i(TAG, "rect center: (" + String.valueOf((rect.right + rect.left)/2) + ", " + String.valueOf((rect.bottom + rect.top)/2) + ")");
-
-        float centerX = (rect.right + rect.left)/2.0f;
-        float centerY = (rect.bottom + rect.top)/2.0f;
-        float x = (centerX / PREVIEW_HEIGHT) * 2.0f - 1.0f;
-        float y = (centerY / PREVIEW_WIDTH) * 2.0f - 1.0f;
-        //float tmp = (eye_dist * 0.000001f - 1115) * 0.04f;   // 1115xxxxxx ~ 1140xxxxxx - > 0 ~ 25 -> 0 ~ 1
-        float tmp = eye_dist * 0.000001f - 1115;  // 1115xxxxxx ~ 1140xxxxxx - > 0 ~ 25
-        tmp = (float) (tmp / Math.cos(Math.PI*yaw/180));  // 根据旋转角度还原两眼距离
-        tmp = tmp * 0.04f;  // 0 ~ 25 -> 0 ~ 1
-        float z = tmp * 3.0f + 1.0f;
-        Log.e(TAG, "transition: x= " + x + ", y= " + y + ", z= " + z);
-
-        My3DRenderer renderer = ((My3DRenderer) mISurfaceRenderer);
-        renderer.getCurrentCamera().setX(x);
-        renderer.getCurrentCamera().setY(y);
-        renderer.setScale(z);
     }
 
     private void handleChangeModel(float[] landmarkX, float[] landmarkY) {
@@ -444,30 +357,49 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
 
         int length = landmarkX.length;
         for (int i=0; i<length; i++) {
-            landmarkX[i] = (landmarkX[i] * 2f - 1f) * 1.25f;
-//            landmarkX[i] = ((1-landmarkX[i]) * 2f - 1f) * 1.25f;
-//            landmarkY[i] = (landmarkY[i] * 2f - 1f) * 1.25f;
-            landmarkY[i] = ((1-landmarkY[i]) * 2f - 1f) * 1.66f;
+            landmarkX[i] = (landmarkX[i] * 2f - 1f) * 6.25f;
+            landmarkY[i] = ((1-landmarkY[i]) * 2f - 1f) * 8.3f;
         }
-
-//            changePoint(vertBuffer, 6, -1.5f, 0.0f, 0.0f);
-//            changePoint(vertBuffer, 7, 1.5f, 0.0f, 0.0f);
-//            changePoint(vertBuffer, 1, -1.1f, -1.1f, 0.0f);
-//            changePoint(vertBuffer, 2, 1.1f, -1.1f, 0.0f);
-//            changePoint(vertBuffer, 3, -1.2f, 1.2f, 0.0f);
-//            changePoint(vertBuffer, 4, 1.2f, 1.2f, 0.0f);
-//            changePoint(vertBuffer, 8, 0.0f, -1.5f, 0.0f);
-//            changePoint(vertBuffer, 5, 0.0f, 1.5f, 0.0f);
-
-        mDynamicPoints.add(new DynamicPoint(9, landmarkX[46], landmarkY[46], 0.75f));
-        mDynamicPoints.add(new DynamicPoint(6, landmarkX[27], landmarkY[27], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(7, landmarkX[5], landmarkY[5], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(1, landmarkX[22], landmarkY[22], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(2, landmarkX[10], landmarkY[10], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(3, landmarkX[32], landmarkY[32], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(4, landmarkX[0], landmarkY[0], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(8, landmarkX[16], landmarkY[16], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(5, (landmarkX[67] + landmarkX[68] * 0.5f), (landmarkY[35] + landmarkY[40] * 0.5f), 0.0f));
+        // 额头
+        mDynamicPoints.add(new DynamicPoint(30, landmarkX[41], landmarkY[41], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(16, landmarkX[39], landmarkY[39], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(21, (landmarkX[36] + landmarkX[39])*0.5f, (landmarkY[36] + landmarkY[39])*0.5f, 0.0f));
+        mDynamicPoints.add(new DynamicPoint(11, landmarkX[36], landmarkY[36], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(31, landmarkX[34], landmarkY[34], 0.0f));
+        // 鼻子
+        mDynamicPoints.add(new DynamicPoint(0, landmarkX[49], landmarkY[49], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(1, landmarkX[82], landmarkY[82], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(2, landmarkX[83], landmarkY[83], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(3, landmarkX[46], landmarkY[46], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(4, landmarkX[43], landmarkY[43], 0.0f));
+        // 嘴巴
+        mDynamicPoints.add(new DynamicPoint(5, landmarkX[90], landmarkY[90], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(6, landmarkX[98], landmarkY[98], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(7, landmarkX[84], landmarkY[84], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(8, landmarkX[102], landmarkY[102], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(9, landmarkX[93], landmarkY[93], 0.0f));
+        // 右眼
+        mDynamicPoints.add(new DynamicPoint(12, landmarkX[72], landmarkY[72], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(13, landmarkX[55], landmarkY[55], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(14, landmarkX[73], landmarkY[73], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(15, landmarkX[52], landmarkY[52], 0.0f));
+        // 左眼
+        mDynamicPoints.add(new DynamicPoint(17, landmarkX[75], landmarkY[75], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(18, landmarkX[58], landmarkY[58], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(19, landmarkX[76], landmarkY[76], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(20, landmarkX[61], landmarkY[61], 0.0f));
+        // 左脸
+        mDynamicPoints.add(new DynamicPoint(22, landmarkX[32], landmarkY[32], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(23, landmarkX[29], landmarkY[29], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(24, landmarkX[24], landmarkY[24], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(25, landmarkX[20], landmarkY[20], 0.0f));
+        // 下巴
+        mDynamicPoints.add(new DynamicPoint(10, landmarkX[16], landmarkY[16], 0.0f));
+        // 右脸
+        mDynamicPoints.add(new DynamicPoint(26, landmarkX[12], landmarkY[12], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(27, landmarkX[8], landmarkY[8], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(28, landmarkX[4], landmarkY[4], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(29, landmarkX[0], landmarkY[0], 0.0f));
 
         ((My3DRenderer) mISurfaceRenderer).setDynamicPoints(mDynamicPoints);
     }
@@ -476,58 +408,27 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
         private Object3D mContainer;
         private Object3D mMask;
         private Geometry3D mGeometry3D;
-        private Vector3 mAccValues;
-        private float mScale = 1.0f;
+
         private List<DynamicPoint> mPoints = new ArrayList<>();
         private boolean mIsChanging = false;
 
         My3DRenderer(Context context) {
             super(context);
-            mAccValues = new Vector3();
         }
 
         @Override
         protected void initScene() {
             try {
-                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.simple_plane_obj);
+                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.base_face_uv_obj);
                 parser.parse();
                 mMask = parser.getParsedObject();
-//                mMask.setScale(0.75f);
-//                mMask.setY(-0.2f);
-//                mMask.setZ(0.4f);
-                mMask.setColor(Color.RED);
+                mMask.setScale(0.25f);
+                mGeometry3D = mMask.getGeometry();
 
                 mContainer = new Object3D();
                 mContainer.addChild(mMask);
                 getCurrentScene().addChild(mContainer);
-
-                mGeometry3D = mMask.getGeometry();
-
                 getCurrentScene().getCamera().setZ(5.5);
-
-                FloatBuffer vertBuffer = mGeometry3D.getVertices();
-                IntBuffer indices = (IntBuffer)mGeometry3D.getIndices();
-
-//                for (int i=0; i<vertBuffer.limit(); i++) {
-//                    String type;
-//                    int tmp = i%3;
-//                    if (tmp == 0) {
-//                        type = "x";
-//                    } else if (tmp == 1) {
-//                        type = "y";
-//                    } else {
-//                        type = "z";
-//                    }
-//                    Log.e(TAG, "get vertex No." + i/3 + " " + type + " : " + vertBuffer.get(i));
-//                }
-
-                for(int i=0; i<mGeometry3D.getNumIndices(); i++) {
-                    int index = indices.get(i);
-                    float x = vertBuffer.get(3*index);
-                    float y = vertBuffer.get(3*index+1);
-                    float z = vertBuffer.get(3*index+2);
-                    Log.e(TAG, "get vertex No." + index + " x: " + x + ", y: " + y + ", z: " + z);
-                }
 
             } catch (ParsingException e) {
                 e.printStackTrace();
@@ -540,26 +441,15 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
         protected void onRender(long ellapsedRealtime, double deltaTime) {
             super.onRender(ellapsedRealtime, deltaTime);
 
-//            FloatBuffer vertBuffer = mGeometry3D.getVertices();
-//            changePoint(vertBuffer, 6, -1.5f, 0.0f, 0.0f);
-//            changePoint(vertBuffer, 7, 1.5f, 0.0f, 0.0f);
-//            changePoint(vertBuffer, 1, -1.1f, -1.1f, 0.0f);
-//            changePoint(vertBuffer, 2, 1.1f, -1.1f, 0.0f);
-//            changePoint(vertBuffer, 3, -1.2f, 1.2f, 0.0f);
-//            changePoint(vertBuffer, 4, 1.2f, 1.2f, 0.0f);
-//            changePoint(vertBuffer, 8, 0.0f, -1.5f, 0.0f);
-//            changePoint(vertBuffer, 5, 0.0f, 1.5f, 0.0f);
-//            mGeometry3D.changeBufferData(mGeometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
-
             if (mPoints != null && mPoints.size() > 0) {
                 mIsChanging = true;
                 FloatBuffer vertBuffer = mGeometry3D.getVertices();
 
-                try {
+                try {  // FIXME
                     for (int i=0; i<mPoints.size(); i++) {
                         DynamicPoint point = mPoints.get(i);
-                        Log.e(TAG, "No." + i + " DynamicPoint:" + point.toString());
-                        changePoint(vertBuffer, point.index, point.x, point.y, point.z);
+                        Log.e(TAG, "No." + i + ": " + point.toString());
+                        changePoint(vertBuffer, point.getIndex(), point.getX(), point.getY(), point.getZ());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -568,44 +458,46 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
                 mGeometry3D.changeBufferData(mGeometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
                 mIsChanging = false;
             }
-
-            //mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
-            //mContainer.setScale(mScale);
         }
 
-        private int[] face1indices = new int[]{12};
-        private int[] face2indices = new int[]{22};
-        private int[] face3indices = new int[]{0};
-        private int[] face4indices = new int[]{10};
-        private int[] face5indices = new int[]{2, 4, 8, 11};
-        private int[] face6indices = new int[]{1, 5, 14, 16};
-        private int[] face7indices = new int[]{7, 9, 20, 23};
-        private int[] face8indices = new int[]{13, 17, 19, 21};
-        private int[] face9indices = new int[]{3, 6, 15, 18};
+        private int faceIndices[][]={
+            {101, 105, 107, 111, 117, 120, },  // 1
+            {87, 89, 92, 95, 99, 100, 103, },  // 2
+            {75, 78, 81, 83, 106, 109, 113, },  // 3
+            {84, 86, 104, 108, },  // 4
+            {53, 57, 59, 63, 79, 82, 85, 88, },  // 5
+            {15, 15, 17, 20, 110, 112, 115, 122, },  // 6
+            {116, 118, },  // 7
+            {24, 27, 29, 97, 102, 119, 126, },  // 8
+            {121, 124, },  // 9
+            {19, 22, 123, 125, },  // 10
+            {16, 21, 23, 25, },  // 11
+            {45, 48, 50, 52, 55, },  // 12
+            {46, 49, },  // 13
+            {51, 54, 90, 91, },  // 14
+            {93, 94, },  // 15
+            {28, 33, 36, 39, 42, 43, 47, 96, 98, },  // 16
+            {58, 61, 66, 68, 71, },  // 17
+            {64, 67, },  // 18
+            {62, 65, 76, 80, },  // 19
+            {73, 77, },  // 20
+            {2, 6, 9, 12, 13, 69, 70, 74, 114, },  // 21
+            {56, 60, },  // 22
+            {1, 4, },  // 23
+            {5, 7, },  // 24
+            {8, 10, },  // 25
+            {11, 14, 18, },  // 26
+            {26, 30, 31, },  // 27
+            {32, 34, },  // 28
+            {35, 37, },  // 29
+            {38, 40, },  // 30
+            {3, 72, },  // 31
+            {41, 44, },  // 32
+        };
+
 
         private int[] getIndexArrayByFace(int faceIndex) {
-            switch (faceIndex) {
-                case 1:
-                    return face1indices;
-                case 2:
-                    return face2indices;
-                case 3:
-                    return face3indices;
-                case 4:
-                    return face4indices;
-                case 5:
-                    return face5indices;
-                case 6:
-                    return face6indices;
-                case 7:
-                    return face7indices;
-                case 8:
-                    return face8indices;
-                case 9:
-                    return face9indices;
-                default:
-                    return null;
-            }
+            return faceIndices[faceIndex];
         }
 
         private void changePoint(FloatBuffer vertBuffer, int faceIndex, float x, float y, float z) {
@@ -613,7 +505,7 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
             if (indices != null) {
                 int len = indices.length;
                 for (int i=0; i<len; i++) {
-                    int index = indices[i];
+                    int index = indices[i]-1;
                     vertBuffer.put(index * 3, x);
                     vertBuffer.put(index * 3 + 1, y);
                     vertBuffer.put(index * 3 + 2, z);
@@ -629,42 +521,10 @@ public class DynamicModelActivity extends AppCompatActivity implements FrameCall
         public void onTouchEvent(MotionEvent event) {
         }
 
-        void setAccelerometerValues(float x, float y, float z) {
-            mAccValues.setAll(x, y, z);
-        }
-
-        void setScale(float scale) {
-            mScale = scale;
-        }
-
         synchronized void setDynamicPoints(List<DynamicPoint> mPoints) {
             if (!mIsChanging) {
                 this.mPoints = mPoints;
             }
-        }
-    }
-
-    private class DynamicPoint {
-        private int index;
-        private float x;
-        private float y;
-        private float z;
-
-        public DynamicPoint(int index, float x, float y, float z) {
-            this.index = index;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        @Override
-        public String toString() {
-            return "DynamicPoint{" +
-                    "index=" + index +
-                    ", x=" + x +
-                    ", y=" + y +
-                    ", z=" + z +
-                    '}';
         }
     }
 }

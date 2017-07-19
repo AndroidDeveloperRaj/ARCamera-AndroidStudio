@@ -1,4 +1,4 @@
-package com.simoncherry.arcamera.custom;
+package com.simoncherry.arcamera.ui.custom;
 
 import android.content.Context;
 import android.graphics.Canvas;

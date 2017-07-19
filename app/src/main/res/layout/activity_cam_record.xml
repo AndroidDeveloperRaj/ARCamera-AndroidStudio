@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.simoncherry.arcamera.activity.CameraActivity">
+    tools:context=".ui.activity.CameraActivity">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
             android:layout_height="match_parent" />
     </FrameLayout>
 
-    <com.simoncherry.arcamera.custom.CircularProgressView
+    <com.simoncherry.arcamera.ui.custom.CircularProgressView
         android:id="@+id/mCapture"
         android:layout_width="88dp"
         android:layout_height="88dp"

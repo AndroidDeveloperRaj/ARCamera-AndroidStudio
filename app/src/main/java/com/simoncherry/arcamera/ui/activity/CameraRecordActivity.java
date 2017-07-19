@@ -1,4 +1,4 @@
-package com.simoncherry.arcamera.activity;
+package com.simoncherry.arcamera.ui.activity;
 
 import android.Manifest;
 import android.content.Context;
@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.codec.CameraRecorder;
-import com.simoncherry.arcamera.custom.CircularProgressView;
+import com.simoncherry.arcamera.ui.custom.CircularProgressView;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
 import com.simoncherry.arcamera.gl.Camera1Renderer;
 import com.simoncherry.arcamera.gl.Camera2Renderer;

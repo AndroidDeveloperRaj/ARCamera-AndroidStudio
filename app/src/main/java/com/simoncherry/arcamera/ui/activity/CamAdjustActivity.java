@@ -1,4 +1,4 @@
-package com.simoncherry.arcamera.activity;
+package com.simoncherry.arcamera.ui.activity;
 
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.Log;

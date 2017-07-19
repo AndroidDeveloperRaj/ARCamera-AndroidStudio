@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.simoncherry.arcamera.activity.ImageActivity">
+    tools:context=".ui.activity.ImageActivity">
 
     <com.simoncherry.arcamera.gl.SGLView
         android:id="@+id/glView"

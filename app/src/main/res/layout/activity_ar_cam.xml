@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:surfaceview="http://schemas.android.com/apk/res-auto"
-    tools:context="com.simoncherry.arcamera.activity.ARCamActivity">
+    tools:context=".ui.activity.ARCamActivity">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
         surfaceview:renderMode="RENDER_WHEN_DIRTY"/>
 
     <!--拍照\录像按钮-->
-    <com.simoncherry.arcamera.custom.CircularProgressView
+    <com.simoncherry.arcamera.ui.custom.CircularProgressView
         android:id="@+id/btn_capture"
         android:layout_width="80dp"
         android:layout_height="80dp"
