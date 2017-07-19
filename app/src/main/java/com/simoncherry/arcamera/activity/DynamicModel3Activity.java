@@ -434,15 +434,46 @@ public class DynamicModel3Activity extends AppCompatActivity implements FrameCal
 
         int length = landmarkX.length;
         for (int i=0; i<length; i++) {
-            landmarkX[i] = (landmarkX[i] * 2f - 1f) * 6.25f;
-            landmarkY[i] = ((1-landmarkY[i]) * 2f - 1f) * 8.3f;
+            landmarkX[i] = (landmarkX[i] * 2f - 1f) * 7f;
+            landmarkY[i] = ((1-landmarkY[i]) * 2f - 1f) * 9.3f;
         }
+
         // 额头
-        mDynamicPoints.add(new DynamicPoint(30, landmarkX[41], landmarkY[41], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(16, landmarkX[39], landmarkY[39], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(21, (landmarkX[36] + landmarkX[39])*0.5f, (landmarkY[36] + landmarkY[39])*0.5f, 0.0f));
-        mDynamicPoints.add(new DynamicPoint(11, landmarkX[36], landmarkY[36], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(31, landmarkX[34], landmarkY[34], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(29, landmarkX[41], landmarkY[41], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(15, landmarkX[39], landmarkY[39], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(20, (landmarkX[36] + landmarkX[39])*0.5f, (landmarkY[36] + landmarkY[39])*0.5f, 0.0f));
+        mDynamicPoints.add(new DynamicPoint(10, landmarkX[36], landmarkY[36], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(30, landmarkX[34], landmarkY[34], 0.0f));
+        // 左脸
+        mDynamicPoints.add(new DynamicPoint(21, landmarkX[32], landmarkY[32], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(22, landmarkX[29], landmarkY[29], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(23, landmarkX[24], landmarkY[24], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(24, landmarkX[20], landmarkY[20], 0.0f));
+        // 下巴
+        mDynamicPoints.add(new DynamicPoint(9, landmarkX[16], landmarkY[16], 0.0f));
+        // 右脸
+        mDynamicPoints.add(new DynamicPoint(28, landmarkX[0], landmarkY[0], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(27, landmarkX[3], landmarkY[3], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(26, landmarkX[8], landmarkY[8], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(25, landmarkX[12], landmarkY[12], 0.0f));
+        // 左眼
+        mDynamicPoints.add(new DynamicPoint(19, landmarkX[61], landmarkY[61], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(32, landmarkX[60], landmarkY[60], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(16, landmarkX[75], landmarkY[75], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(31, landmarkX[59], landmarkY[59], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(17, landmarkX[58], landmarkY[58], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(33, landmarkX[63], landmarkY[63], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(18, landmarkX[76], landmarkY[76], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(34, landmarkX[62], landmarkY[62], 0.0f));
+        // 右眼
+        mDynamicPoints.add(new DynamicPoint(14, landmarkX[52], landmarkY[52], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(36, landmarkX[53], landmarkY[53], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(11, landmarkX[72], landmarkY[72], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(35, landmarkX[54], landmarkY[54], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(12, landmarkX[55], landmarkY[55], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(38, landmarkX[56], landmarkY[56], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(13, landmarkX[73], landmarkY[73], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(37, landmarkX[57], landmarkY[57], 0.0f));
         // 鼻子
         mDynamicPoints.add(new DynamicPoint(0, landmarkX[49], landmarkY[49], 0.0f));
         mDynamicPoints.add(new DynamicPoint(1, landmarkX[82], landmarkY[82], 0.0f));
@@ -451,32 +482,14 @@ public class DynamicModel3Activity extends AppCompatActivity implements FrameCal
         mDynamicPoints.add(new DynamicPoint(4, landmarkX[43], landmarkY[43], 0.0f));
         // 嘴巴
         mDynamicPoints.add(new DynamicPoint(5, landmarkX[90], landmarkY[90], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(6, landmarkX[98], landmarkY[98], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(7, landmarkX[84], landmarkY[84], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(8, landmarkX[102], landmarkY[102], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(9, landmarkX[93], landmarkY[93], 0.0f));
-        // 右眼
-        mDynamicPoints.add(new DynamicPoint(12, landmarkX[72], landmarkY[72], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(13, landmarkX[55], landmarkY[55], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(14, landmarkX[73], landmarkY[73], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(15, landmarkX[52], landmarkY[52], 0.0f));
-        // 左眼
-        mDynamicPoints.add(new DynamicPoint(17, landmarkX[75], landmarkY[75], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(18, landmarkX[58], landmarkY[58], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(19, landmarkX[76], landmarkY[76], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(20, landmarkX[61], landmarkY[61], 0.0f));
-        // 左脸
-        mDynamicPoints.add(new DynamicPoint(22, landmarkX[32], landmarkY[32], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(23, landmarkX[29], landmarkY[29], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(24, landmarkX[24], landmarkY[24], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(25, landmarkX[20], landmarkY[20], 0.0f));
-        // 下巴
-        mDynamicPoints.add(new DynamicPoint(10, landmarkX[16], landmarkY[16], 0.0f));
-        // 右脸
-        mDynamicPoints.add(new DynamicPoint(26, landmarkX[12], landmarkY[12], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(27, landmarkX[8], landmarkY[8], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(28, landmarkX[4], landmarkY[4], 0.0f));
-        mDynamicPoints.add(new DynamicPoint(29, landmarkX[0], landmarkY[0], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(41, landmarkX[99], landmarkY[99], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(42, landmarkX[98], landmarkY[98], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(43, landmarkX[97], landmarkY[97], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(6, landmarkX[84], landmarkY[84], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(40, landmarkX[103], landmarkY[103], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(7, landmarkX[102], landmarkY[102], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(39, landmarkX[101], landmarkY[101], 0.0f));
+        mDynamicPoints.add(new DynamicPoint(8, landmarkX[93], landmarkY[93], 0.0f));
 
         ((My3DRenderer) mISurfaceRenderer).setDynamicPoints(mDynamicPoints);
     }
@@ -496,7 +509,7 @@ public class DynamicModel3Activity extends AppCompatActivity implements FrameCal
         @Override
         protected void initScene() {
             try {
-                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.base_face_uv_obj);
+                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.base_face_uv3_obj);
                 parser.parse();
                 mMask = parser.getParsedObject();
                 mMask.setScale(0.25f);
@@ -538,38 +551,50 @@ public class DynamicModel3Activity extends AppCompatActivity implements FrameCal
         }
 
         private int faceIndices[][]={
-            {101, 105, 107, 111, 117, 120, },  // 1
-            {87, 89, 92, 95, 99, 100, 103, },  // 2
-            {75, 78, 81, 83, 106, 109, 113, },  // 3
-            {84, 86, 104, 108, },  // 4
-            {53, 57, 59, 63, 79, 82, 85, 88, },  // 5
-            {15, 15, 17, 20, 110, 112, 115, 122, },  // 6
-            {116, 118, },  // 7
-            {24, 27, 29, 97, 102, 119, 126, },  // 8
-            {121, 124, },  // 9
-            {19, 22, 123, 125, },  // 10
-            {16, 21, 23, 25, },  // 11
-            {45, 48, 50, 52, 55, },  // 12
-            {46, 49, },  // 13
-            {51, 54, 90, 91, },  // 14
-            {93, 94, },  // 15
-            {28, 33, 36, 39, 42, 43, 47, 96, 98, },  // 16
-            {58, 61, 66, 68, 71, },  // 17
-            {64, 67, },  // 18
-            {62, 65, 76, 80, },  // 19
-            {73, 77, },  // 20
-            {2, 6, 9, 12, 13, 69, 70, 74, 114, },  // 21
-            {56, 60, },  // 22
-            {1, 4, },  // 23
-            {5, 7, },  // 24
-            {8, 10, },  // 25
-            {11, 14, 18, },  // 26
-            {26, 30, 31, },  // 27
-            {32, 34, },  // 28
-            {35, 37, },  // 29
-            {38, 40, },  // 30
-            {3, 72, },  // 31
-            {41, 44, },  // 32
+                {66, 68, 123, 125, 128, 132, 135, 137},
+                {57, 59, 63, 64, 110, 114, 116, 120, 124},
+                {51, 53, 67, 71, 86, 90, 92, 96, 121},
+                {54, 56, 65, 69},
+                {35, 39, 41, 45, 49, 52, 55, 58},
+                {15, 70, 122, 129, 146, 152, 158},
+                {17, 61, 126, 136, 150, 156, 162},
+                {139, 144},
+                {141, 142, 147, 149, 151, 154},
+                {153, 155, 157, 160},
+                {33, 34, 37, 99, 101, 105, 107},
+                {100, 103},
+                {36, 60, 97, 109},
+                {112, 115},
+                {16, 21, 24, 27, 30, 31, 62, 106, 118},
+                {40, 43, 47, 75, 77, 81, 84},
+                {76, 79},
+                {44, 50, 83, 94},
+                {88, 91},
+                {2, 6, 9, 12, 13, 46, 72, 73, 85},
+                {38, 42},
+                {1, 4},
+                {5, 7},
+                {8, 10},
+                {11, 14, 159},
+                {18, 19, 161},
+                {20, 22},
+                {23, 25},
+                {26, 28},
+                {3, 48},
+                {29, 32},
+                {80, 82},
+                {74, 78},
+                {93, 95},
+                {87, 89},
+                {98, 102},
+                {104, 108},
+                {117, 119},
+                {111, 113},
+                {140, 145},
+                {143, 148},
+                {127, 130},
+                {131, 133},
+                {134, 138},
         };
 
 
