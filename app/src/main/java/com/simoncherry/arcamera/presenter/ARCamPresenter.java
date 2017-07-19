@@ -178,8 +178,8 @@ public class ARCamPresenter implements ARCamContract.Presenter {
 
         int length = landmarkX.length;
         for (int i=0; i<length; i++) {
-            landmarkX[i] = (landmarkX[i] * 2f - 1f) * 1.5f;
-            landmarkY[i] = ((1-landmarkY[i]) * 2f - 1f) * 2f;
+            landmarkX[i] = (landmarkX[i] * 2f - 1f) * 7f;
+            landmarkY[i] = ((1-landmarkY[i]) * 2f - 1f) * 9.3f;
         }
 
         // 额头

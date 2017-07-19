@@ -69,6 +69,15 @@ public class My3DRenderer extends Renderer {
         mAccValues.setAll(x, y, z);
     }
 
+    // 设置3D模型的平移
+    public void setTransition(float x, float y, float z) {
+        if (!mIsFaceMask) {
+            getCurrentCamera().setX(x);
+            getCurrentCamera().setY(y);
+            setScale(z);
+        }
+    }
+
     // 设置3D模型的缩放比例
     public void setScale(float scale) {
         mScale = scale;

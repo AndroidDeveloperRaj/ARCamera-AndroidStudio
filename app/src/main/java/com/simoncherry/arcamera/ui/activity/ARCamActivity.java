@@ -620,10 +620,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
     @Override
     public void onGet3dModelTransition(float x, float y, float z) {
-        My3DRenderer renderer = ((My3DRenderer) mISurfaceRenderer);
-        renderer.getCurrentCamera().setX(x);
-        renderer.getCurrentCamera().setY(y);
-        renderer.setScale(z);
+        ((My3DRenderer) mISurfaceRenderer).setTransition(x, y, z);
     }
 
     @Override
