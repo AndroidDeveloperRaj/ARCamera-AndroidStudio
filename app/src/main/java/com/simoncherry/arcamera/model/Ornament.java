@@ -20,6 +20,8 @@ public class Ornament {
     private float rotateZ;
     private int color;
     private List<Animation3D> animation3Ds;
+    private int textureResId = -1;
+    private boolean isFaceMask;
 
     public int getModelResId() {
         return modelResId;
@@ -107,6 +109,22 @@ public class Ornament {
 
     public void setAnimation3Ds(List<Animation3D> animation3Ds) {
         this.animation3Ds = animation3Ds;
+    }
+
+    public int getTextureResId() {
+        return textureResId;
+    }
+
+    public void setTextureResId(int textureResId) {
+        this.textureResId = textureResId;
+    }
+
+    public boolean isFaceMask() {
+        return isFaceMask;
+    }
+
+    public void setFaceMask(boolean faceMask) {
+        isFaceMask = faceMask;
     }
 
     public void setOffset(float x, float y, float z) {

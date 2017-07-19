@@ -187,4 +187,27 @@ public class OrnamentFactory {
 //        ornament.setColor(NO_COLOR);
 //        return ornament;
 //    }
+
+
+    public static List<Ornament> getPresetMask() {
+        List<Ornament> ornaments = new ArrayList<>();
+        ornaments.add(getNoOrnament());
+        ornaments.add(getMask(R.drawable.average_male, R.drawable.mask_man));
+        ornaments.add(getMask(R.drawable.lion_texture, R.drawable.mask_lion));
+        ornaments.add(getMask(R.drawable.skull_texture, R.drawable.mask_skull));
+        return ornaments;
+    }
+
+    private static Ornament getMask(int textureResId, int imgResId) {
+        Ornament ornament = new Ornament();
+        ornament.setFaceMask(true);
+        ornament.setModelResId(R.raw.base_face_uv3_obj);
+        ornament.setTextureResId(textureResId);
+        ornament.setImgResId(imgResId);
+        ornament.setScale(1.2f);
+        ornament.setOffset(0, 0, 0);
+        ornament.setRotate(0, 0, 0);
+        ornament.setColor(NO_COLOR);
+        return ornament;
+    }
 }

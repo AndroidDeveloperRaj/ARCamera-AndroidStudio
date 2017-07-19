@@ -36,6 +36,7 @@ import com.simoncherry.arcamera.gl.FrameCallback;
 import com.simoncherry.arcamera.gl.My3DRenderer;
 import com.simoncherry.arcamera.gl.MyRenderer;
 import com.simoncherry.arcamera.gl.TextureController;
+import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Filter;
 import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.presenter.ARCamPresenter;
@@ -131,6 +132,12 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private FilterAdapter mEffectAdapter;
     private List<Filter> mEffects;
 
+    // 面具列表
+    private CustomBottomSheet mMaskSheet;
+    private RecyclerView mRvMask;
+    private OrnamentAdapter mMaskAdapter;
+    private List<Ornament> mMasks;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +162,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         initFilterSheet();
         initOrnamentSheet();
         initEffectSheet();
+        initMaskSheet();
     }
 
     private void initSurfaceView() {
@@ -252,19 +260,16 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             public void onClick(View v) {
                 switch (v.getId()) {
                     case R.id.iv_filter:
-                        //Toast.makeText(mContext, "click filter", Toast.LENGTH_SHORT).show();
                         mFilterSheet.show();
                         break;
                     case R.id.iv_ornament:
-                        //Toast.makeText(mContext, "click ornament", Toast.LENGTH_SHORT).show();
                         mOrnamentSheet.show();
                         break;
                     case R.id.iv_effect:
-                        //Toast.makeText(mContext, "click effect", Toast.LENGTH_SHORT).show();
                         mEffectSheet.show();
                         break;
                     case R.id.iv_mask:
-                        Toast.makeText(mContext, "click mask", Toast.LENGTH_SHORT).show();
+                        mMaskSheet.show();
                         break;
                 }
             }
@@ -359,6 +364,34 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
         mEffects.addAll(FilterFactory.getPresetEffect());
         mEffectAdapter.notifyDataSetChanged();
+    }
+
+    private void initMaskSheet() {
+        mMasks = new ArrayList<>();
+        mMaskAdapter = new OrnamentAdapter(mContext, mMasks);
+        mMaskAdapter.setOnItemClickListener(new OrnamentAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                mMaskSheet.dismiss();
+                Ornament mask = mMasks.get(position);
+                if (position == 0) mask = null;
+                ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(mask);
+                ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
+            }
+        });
+
+        View sheetView = LayoutInflater.from(mContext)
+                .inflate(R.layout.layout_bottom_sheet, null);
+        mRvMask = (RecyclerView) sheetView.findViewById(R.id.rv_gallery);
+        mRvMask.setAdapter(mMaskAdapter);
+        mRvMask.setLayoutManager(new GridLayoutManager(mContext, 4));
+        mMaskSheet = new CustomBottomSheet(mContext);
+        mMaskSheet.setContentView(sheetView);
+        mMaskSheet.getWindow().findViewById(R.id.design_bottom_sheet)
+                .setBackgroundResource(android.R.color.transparent);
+
+        mMasks.addAll(OrnamentFactory.getPresetMask());
+        mMaskAdapter.notifyDataSetChanged();
     }
 
     // 初始化的Runnable
@@ -600,6 +633,17 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
             ((LandmarkFilter) aFilter).setMouthOpen(isMouthOpen);
         }
+
+        float[] copyLandmarkX = new float[landmarkX.length];
+        float[] copyLandmarkY = new float[landmarkY.length];
+        System.arraycopy(landmarkX, 0, copyLandmarkX, 0, landmarkX.length);
+        System.arraycopy(landmarkY, 0, copyLandmarkY, 0, landmarkY.length);
+        mPresenter.handleChangeModel(copyLandmarkX, copyLandmarkY);
+    }
+
+    @Override
+    public void onGetChangePoint(List<DynamicPoint> mDynamicPoints) {
+        ((My3DRenderer) mISurfaceRenderer).setDynamicPoints(mDynamicPoints);
     }
 
     private void handleVideoFrame(final byte[] bytes) {
