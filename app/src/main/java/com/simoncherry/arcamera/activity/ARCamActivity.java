@@ -3,14 +3,11 @@ package com.simoncherry.arcamera.activity;
 import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -28,6 +25,7 @@ import com.sensetime.stmobileapi.STMobileFaceAction;
 import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.codec.CameraRecorder;
+import com.simoncherry.arcamera.contract.ARCamContract;
 import com.simoncherry.arcamera.custom.CircularProgressView;
 import com.simoncherry.arcamera.filter.camera.AFilter;
 import com.simoncherry.arcamera.filter.camera.FilterFactory;
@@ -38,6 +36,7 @@ import com.simoncherry.arcamera.gl.FrameCallback;
 import com.simoncherry.arcamera.gl.My3DRenderer;
 import com.simoncherry.arcamera.gl.MyRenderer;
 import com.simoncherry.arcamera.gl.TextureController;
+import com.simoncherry.arcamera.presenter.ARCamPresenter;
 import com.simoncherry.arcamera.util.Accelerometer;
 import com.simoncherry.arcamera.util.FileUtls;
 import com.simoncherry.arcamera.util.PermissionUtils;
@@ -45,16 +44,13 @@ import com.simoncherry.arcamera.util.PermissionUtils;
 import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.ISurface;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ARCamActivity extends AppCompatActivity implements FrameCallback {
+public class ARCamActivity extends AppCompatActivity implements ARCamContract.View, FrameCallback {
 
     private final static String TAG = ARCamActivity.class.getSimpleName();
     // 拍照尺寸
@@ -68,6 +64,7 @@ public class ARCamActivity extends AppCompatActivity implements FrameCallback {
     private final static int PREVIEW_HEIGHT = 480;
 
     private Context mContext;
+    private ARCamPresenter mPresenter;
 
     // 用于渲染相机预览画面
     private SurfaceView mSurfaceView;
@@ -114,6 +111,7 @@ public class ARCamActivity extends AppCompatActivity implements FrameCallback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = ARCamActivity.this;
+        mPresenter = new ARCamPresenter(this);
         // 用于人脸检测
         mAccelerometer = new Accelerometer(this);
         mAccelerometer.start();
@@ -446,6 +444,39 @@ public class ARCamActivity extends AppCompatActivity implements FrameCallback {
         }
     }
 
+    @Override
+    public void onSavePhotoSuccess(final String fileName) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(ARCamActivity.this, "保存成功->" + fileName, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onSavePhotoFailed() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(ARCamActivity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onGet3dModelRotation(float pitch, float roll, float yaw) {
+        ((My3DRenderer) mISurfaceRenderer).setAccelerometerValues(roll, yaw, pitch);
+    }
+
+    @Override
+    public void onGet3dModelTransition(float x, float y, float z) {
+        My3DRenderer renderer = ((My3DRenderer) mISurfaceRenderer);
+        renderer.getCurrentCamera().setX(x);
+        renderer.getCurrentCamera().setY(y);
+        renderer.setScale(z);
+    }
+
     private void handleVideoFrame(final byte[] bytes) {
         // 如果Rajawali渲染的3D模型帧数据不为空，就将两者合成
         if (mRajawaliPixels != null) {
@@ -476,61 +507,9 @@ public class ARCamActivity extends AppCompatActivity implements FrameCallback {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // 将相机预览的帧数据转成Bitmap
-                Bitmap bitmap = Bitmap.createBitmap(IMAGE_WIDTH,IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
-                ByteBuffer b = ByteBuffer.wrap(bytes);
-                bitmap.copyPixelsFromBuffer(b);
-                // 如果Rajawali渲染的3D模型截图不为空，就将两者合成
-                if (mRajawaliBitmap != null) {
-                    Log.i(TAG, "mRajawaliBitmap != null");
-                    mRajawaliBitmap = Bitmap.createScaledBitmap(mRajawaliBitmap, IMAGE_WIDTH, IMAGE_HEIGHT, false);
-                    Canvas canvas = new Canvas(bitmap);
-                    canvas.drawBitmap(mRajawaliBitmap, 0, 0, null);
-                    canvas.save(Canvas.ALL_SAVE_FLAG);
-                    canvas.restore();
-                    mRajawaliBitmap.recycle();
-                    mRajawaliBitmap = null;
-                } else {
-                    Log.i(TAG, "mRajawaliBitmap == null");
-                }
-                // 最后保存
-                saveBitmap(bitmap);
-                bitmap.recycle();
-                bitmap = null;
+                mPresenter.handlePhotoFrame(bytes, mRajawaliBitmap, IMAGE_WIDTH, IMAGE_HEIGHT);
             }
         }).start();
-    }
-
-    // 保存拍照结果
-    public void saveBitmap(Bitmap b){
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/OpenGLDemo/photo/";
-        File folder = new File(path);
-        if(!folder.exists() && !folder.mkdirs()){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(ARCamActivity.this, "无法保存照片", Toast.LENGTH_SHORT).show();
-                }
-            });
-            return;
-        }
-        long dataTake = System.currentTimeMillis();
-        final String jpegName = path + dataTake + ".jpg";
-        try {
-            FileOutputStream fout = new FileOutputStream(jpegName);
-            BufferedOutputStream bos = new BufferedOutputStream(fout);
-            b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-            bos.flush();
-            bos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(ARCamActivity.this, "保存成功->"+jpegName, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void onTrackDetectedCallback(STMobileFaceAction[] faceActions, final int orientation, final int value,
@@ -538,9 +517,9 @@ public class ARCamActivity extends AppCompatActivity implements FrameCallback {
                                          final int eye_dist, final int id, final int eyeBlink, final int mouthAh,
                                          final int headYaw, final int headPitch, final int browJump) {
         // 处理3D模型的旋转
-        handle3dModelRotation(pitch, roll, yaw);
+        mPresenter.handle3dModelRotation(pitch, roll, yaw);
         // 处理3D模型的平移
-        handle3dModelTransition(faceActions, orientation, eye_dist, yaw);
+        mPresenter.handle3dModelTransition(faceActions, orientation, eye_dist, yaw, PREVIEW_WIDTH, PREVIEW_HEIGHT);
         // 处理需要用到人脸关键点的滤镜
         setLandmarkFilter(faceActions, orientation, mouthAh);
         // 显示人脸检测的参数
@@ -579,37 +558,5 @@ public class ARCamActivity extends AppCompatActivity implements FrameCallback {
                 ((LandmarkFilter) aFilter).setMouthOpen(mouthAh);
             }
         }
-    }
-
-    // 处理3D模型的旋转
-    private void handle3dModelRotation(final float pitch, final float roll, final float yaw) {
-        ((My3DRenderer) mISurfaceRenderer).setAccelerometerValues(roll+90, -yaw, -pitch);
-    }
-
-    // 处理3D模型的平移
-    private void handle3dModelTransition(STMobileFaceAction[] faceActions, int orientation, int eye_dist, float yaw) {
-        boolean rotate270 = orientation == 270;
-        STMobileFaceAction r = faceActions[0];
-        Rect rect;
-        if (rotate270) {
-            rect = STUtils.RotateDeg270(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        } else {
-            rect = STUtils.RotateDeg90(r.getFace().getRect(), PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        }
-
-        float centerX = (rect.right + rect.left) / 2.0f;
-        float centerY = (rect.bottom + rect.top) / 2.0f;
-        float x = (centerX / PREVIEW_HEIGHT) * 2.0f - 1.0f;
-        float y = (centerY / PREVIEW_WIDTH) * 2.0f - 1.0f;
-        float tmp = eye_dist * 0.000001f - 1115;  // 1115xxxxxx ~ 1140xxxxxx - > 0 ~ 25
-        tmp = (float) (tmp / Math.cos(Math.PI*yaw/180));  // 根据旋转角度还原两眼距离
-        tmp = tmp * 0.04f;  // 0 ~ 25 -> 0 ~ 1
-        float z = tmp * 3.0f + 1.0f;
-        Log.e(TAG, "transition: x= " + x + ", y= " + y + ", z= " + z);
-
-        My3DRenderer renderer = ((My3DRenderer) mISurfaceRenderer);
-        renderer.getCurrentCamera().setX(x);
-        renderer.getCurrentCamera().setY(y);
-        renderer.setScale(z);
     }
 }
