@@ -36,8 +36,10 @@ import com.simoncherry.arcamera.gl.FrameCallback;
 import com.simoncherry.arcamera.gl.My3DRenderer;
 import com.simoncherry.arcamera.gl.MyRenderer;
 import com.simoncherry.arcamera.gl.TextureController;
+import com.simoncherry.arcamera.model.Filter;
 import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.presenter.ARCamPresenter;
+import com.simoncherry.arcamera.ui.adapter.FilterAdapter;
 import com.simoncherry.arcamera.ui.adapter.OrnamentAdapter;
 import com.simoncherry.arcamera.ui.custom.CircularProgressView;
 import com.simoncherry.arcamera.ui.custom.CustomBottomSheet;
@@ -111,12 +113,17 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     // 处理帧数据的标志位 0为拍照 1为录像
     private int mFrameType = 0;
 
+    // 滤镜列表
+    private CustomBottomSheet mFilterSheet;
+    private RecyclerView mRvFilter;
+    private FilterAdapter mFilterAdapter;
+    private List<Filter> mFilters;
+
     // 装饰品列表
     private CustomBottomSheet mOrnamentSheet;
     private RecyclerView mRvOrnament;
     private OrnamentAdapter mOrnamentAdapter;
     private List<Ornament> mOrnaments;
-    private int mOrnamentId = -1;
 
 
     @Override
@@ -139,6 +146,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         initCaptureButton();
         initMenuButton();
         initCommonView();
+        initFilterSheet();
         initOrnamentSheet();
     }
 
@@ -237,9 +245,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             public void onClick(View v) {
                 switch (v.getId()) {
                     case R.id.iv_filter:
-                        Toast.makeText(mContext, "click filter", Toast.LENGTH_SHORT).show();
-                        mCurrentFilterId = R.id.menu_camera_big_eye;
-                        setSingleFilter(mController, mCurrentFilterId);
+                        //Toast.makeText(mContext, "click filter", Toast.LENGTH_SHORT).show();
+                        mFilterSheet.show();
                         break;
                     case R.id.iv_ornament:
                         //Toast.makeText(mContext, "click ornament", Toast.LENGTH_SHORT).show();
@@ -266,6 +273,32 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         mActionText = (TextView) findViewById(R.id.tv_action);
     }
 
+    private void initFilterSheet() {
+        mFilters = new ArrayList<>();
+        mFilterAdapter = new FilterAdapter(mContext, mFilters);
+        mFilterAdapter.setOnItemClickListener(new FilterAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int id) {
+                mFilterSheet.dismiss();
+                mCurrentFilterId = id;
+                setSingleFilter(mController, mCurrentFilterId);
+            }
+        });
+
+        View sheetView = LayoutInflater.from(mContext)
+                .inflate(R.layout.layout_bottom_sheet, null);
+        mRvFilter = (RecyclerView) sheetView.findViewById(R.id.rv_gallery);
+        mRvFilter.setAdapter(mFilterAdapter);
+        mRvFilter.setLayoutManager(new GridLayoutManager(mContext, 4));
+        mFilterSheet = new CustomBottomSheet(mContext);
+        mFilterSheet.setContentView(sheetView);
+        mFilterSheet.getWindow().findViewById(R.id.design_bottom_sheet)
+                .setBackgroundResource(android.R.color.transparent);
+
+        mFilters.addAll(FilterFactory.getPresetFilter());
+        mFilterAdapter.notifyDataSetChanged();
+    }
+
     private void initOrnamentSheet() {
         mOrnaments = new ArrayList<>();
         mOrnamentAdapter = new OrnamentAdapter(mContext, mOrnaments);
@@ -273,8 +306,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             @Override
             public void onItemClick(int position) {
                 mOrnamentSheet.dismiss();
-                mOrnamentId = position;
-                Ornament ornament = mOrnaments.get(mOrnamentId);
+                Ornament ornament = mOrnaments.get(position);
                 ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
                 ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
             }

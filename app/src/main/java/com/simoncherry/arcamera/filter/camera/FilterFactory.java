@@ -3,6 +3,10 @@ package com.simoncherry.arcamera.filter.camera;
 import android.content.res.Resources;
 
 import com.simoncherry.arcamera.R;
+import com.simoncherry.arcamera.model.Filter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Simon on 2017/7/6.
@@ -67,5 +71,22 @@ public class FilterFactory {
             default:
                 return new NoFilter(res);
         }
+    }
+
+    public static List<Filter> getPresetFilter() {
+        List<Filter> filterList = new ArrayList<>();
+        filterList.add(new Filter(R.id.menu_camera_beauty, R.drawable.filter_thumb_0, "美颜"));
+        filterList.add(new Filter(R.id.menu_camera_gray, R.drawable.filter_thumb_0, "灰度化"));
+        filterList.add(new Filter(R.id.menu_camera_binary, R.drawable.filter_thumb_0, "二值化"));
+        filterList.add(new Filter(R.id.menu_camera_cool, R.drawable.filter_thumb_0, "冷色调"));
+        filterList.add(new Filter(R.id.menu_camera_warm, R.drawable.filter_thumb_0, "暖色调"));
+        filterList.add(new Filter(R.id.menu_camera_negative, R.drawable.filter_thumb_0, "底片"));
+        filterList.add(new Filter(R.id.menu_camera_blur, R.drawable.filter_thumb_0, "模糊"));
+        filterList.add(new Filter(R.id.menu_camera_emboss, R.drawable.filter_thumb_0, "浮雕"));
+        filterList.add(new Filter(R.id.menu_camera_mosaic, R.drawable.filter_thumb_0, "马赛克"));
+        filterList.add(new Filter(R.id.menu_camera_mirror, R.drawable.filter_thumb_0, "镜像"));
+        filterList.add(new Filter(R.id.menu_camera_fisheye, R.drawable.filter_thumb_0, "鱼眼"));
+        filterList.add(new Filter(R.id.menu_camera_mag, R.drawable.filter_thumb_0, "放大镜"));
+        return filterList;
     }
 }
