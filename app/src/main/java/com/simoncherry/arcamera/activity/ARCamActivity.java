@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.PointF;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sensetime.stmobileapi.STMobileFaceAction;
-import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.codec.CameraRecorder;
 import com.simoncherry.arcamera.contract.ARCamContract;
@@ -45,8 +43,6 @@ import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.ISurface;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -225,6 +221,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 switch (v.getId()) {
                     case R.id.iv_filter:
                         Toast.makeText(mContext, "click filter", Toast.LENGTH_SHORT).show();
+                        mCurrentFilterId = R.id.menu_camera_big_eye;
+                        setSingleFilter(mController, mCurrentFilterId);
                         break;
                     case R.id.iv_ornament:
                         Toast.makeText(mContext, "click ornament", Toast.LENGTH_SHORT).show();
@@ -465,6 +463,11 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     }
 
     @Override
+    public void onGetVideoData(byte[] bytes) {
+        mp4Recorder.feedData(bytes, time);
+    }
+
+    @Override
     public void onGet3dModelRotation(float pitch, float roll, float yaw) {
         ((My3DRenderer) mISurfaceRenderer).setAccelerometerValues(roll, yaw, pitch);
     }
@@ -477,30 +480,17 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         renderer.setScale(z);
     }
 
-    private void handleVideoFrame(final byte[] bytes) {
-        // 如果Rajawali渲染的3D模型帧数据不为空，就将两者合成
-        if (mRajawaliPixels != null) {
-            final ByteBuffer buf = ByteBuffer.allocate(mRajawaliPixels.length * 4)
-                    .order(ByteOrder.LITTLE_ENDIAN);
-            buf.asIntBuffer().put(mRajawaliPixels);
-            mRajawaliPixels = null;
-            byte[] tmpArray = buf.array();
-            for (int i=0; i<bytes.length; i+=4) {
-                byte a = tmpArray[i];
-                byte r = tmpArray[i+1];
-                byte g = tmpArray[i+2];
-                byte b = tmpArray[i+3];
-                // 取Rajawali不透明的部分
-                // FIXME -- 贴图中透明和纯黑色部分的ARGB都是全0，导致纯黑色的地方被错误过滤。非技术上的解决方法是改贴图。。。
-                if (a != 0) {
-                    bytes[i] = a;
-                    bytes[i + 1] = r;
-                    bytes[i + 2] = g;
-                    bytes[i + 3] = b;
-                }
-            }
+    @Override
+    public void onGetFaceLandmark(float[] landmarkX, float[] landmarkY, int isMouthOpen) {
+        AFilter aFilter = mController.getLastFilter();
+        if(aFilter != null && aFilter instanceof LandmarkFilter) {
+            ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
+            ((LandmarkFilter) aFilter).setMouthOpen(isMouthOpen);
         }
-        mp4Recorder.feedData(bytes, time);
+    }
+
+    private void handleVideoFrame(final byte[] bytes) {
+        mPresenter.handleVideoFrame(bytes, mRajawaliPixels);
     }
 
     private void handlePhotoFrame(final byte[] bytes) {
@@ -520,8 +510,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         mPresenter.handle3dModelRotation(pitch, roll, yaw);
         // 处理3D模型的平移
         mPresenter.handle3dModelTransition(faceActions, orientation, eye_dist, yaw, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        // 处理需要用到人脸关键点的滤镜
-        setLandmarkFilter(faceActions, orientation, mouthAh);
+        // 处理人脸关键点
+        mPresenter.handleFaceLandmark(faceActions, orientation, mouthAh, PREVIEW_WIDTH, PREVIEW_HEIGHT);
         // 显示人脸检测的参数
         runOnUiThread(new Runnable() {
             @Override
@@ -532,31 +522,5 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                         + mouthAh + "\nHEAD_YAW:" + headYaw + "\nHEAD_PITCH:" + headPitch + "\nBROW_JUMP:" + browJump);
             }
         });
-    }
-
-    // 处理需要用到人脸关键点的滤镜
-    private void setLandmarkFilter(STMobileFaceAction[] faceActions, int orientation, int mouthAh) {
-        AFilter aFilter = mController.getLastFilter();
-        if(aFilter != null && aFilter instanceof LandmarkFilter && faceActions != null) {
-            boolean rotate270 = orientation == 270;
-            for (STMobileFaceAction r : faceActions) {
-                Log.i("Test", "-->> face count = "+faceActions.length);
-                PointF[] points = r.getFace().getPointsArray();
-                float[] landmarkX = new float[points.length];
-                float[] landmarkY = new float[points.length];
-                for (int i = 0; i < points.length; i++) {
-                    if (rotate270) {
-                        points[i] = STUtils.RotateDeg270(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    } else {
-                        points[i] = STUtils.RotateDeg90(points[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
-                    }
-
-                    landmarkX[i] = 1 - points[i].x / 480.0f;
-                    landmarkY[i] = points[i].y / 640.0f;
-                }
-                ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
-                ((LandmarkFilter) aFilter).setMouthOpen(mouthAh);
-            }
-        }
     }
 }

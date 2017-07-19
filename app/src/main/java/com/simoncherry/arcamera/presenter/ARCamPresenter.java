@@ -3,6 +3,7 @@ package com.simoncherry.arcamera.presenter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Environment;
 import android.util.Log;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by Simon on 2017/7/19.
@@ -54,6 +56,33 @@ public class ARCamPresenter implements ARCamContract.Presenter {
         savePhoto(bitmap);
         bitmap.recycle();
         bitmap = null;
+    }
+
+    @Override
+    public void handleVideoFrame(byte[] bytes, int[] mRajawaliPixels) {
+        // 如果Rajawali渲染的3D模型帧数据不为空，就将两者合成
+        if (mRajawaliPixels != null) {
+            final ByteBuffer buf = ByteBuffer.allocate(mRajawaliPixels.length * 4)
+                    .order(ByteOrder.LITTLE_ENDIAN);
+            buf.asIntBuffer().put(mRajawaliPixels);
+            mRajawaliPixels = null;
+            byte[] tmpArray = buf.array();
+            for (int i=0; i<bytes.length; i+=4) {
+                byte a = tmpArray[i];
+                byte r = tmpArray[i+1];
+                byte g = tmpArray[i+2];
+                byte b = tmpArray[i+3];
+                // 取Rajawali不透明的部分
+                // FIXME -- 贴图中透明和纯黑色部分的ARGB都是全0，导致纯黑色的地方被错误过滤。非技术上的解决方法是改贴图。。。
+                if (a != 0) {
+                    bytes[i] = a;
+                    bytes[i + 1] = r;
+                    bytes[i + 2] = g;
+                    bytes[i + 3] = b;
+                }
+            }
+        }
+        mView.onGetVideoData(bytes);
     }
 
     @Override
@@ -110,5 +139,31 @@ public class ARCamPresenter implements ARCamContract.Presenter {
         Log.e(TAG, "transition: x= " + x + ", y= " + y + ", z= " + z);
 
         mView.onGet3dModelTransition(x, y, z);
+    }
+
+    // 处理人脸关键点
+    @Override
+    public void handleFaceLandmark(STMobileFaceAction[] faceActions, int orientation, int mouthAh,
+                                   int previewWidth, int previewHeight) {
+        boolean rotate270 = orientation == 270;
+        if (faceActions != null && faceActions.length > 0) {
+            STMobileFaceAction faceAction = faceActions[0];
+            Log.i("Test", "-->> face count = "+faceActions.length);
+            PointF[] points = faceAction.getFace().getPointsArray();
+            float[] landmarkX = new float[points.length];
+            float[] landmarkY = new float[points.length];
+            for (int i = 0; i < points.length; i++) {
+                if (rotate270) {
+                    points[i] = STUtils.RotateDeg270(points[i], previewWidth, previewHeight);
+                } else {
+                    points[i] = STUtils.RotateDeg90(points[i], previewWidth, previewHeight);
+                }
+
+                landmarkX[i] = 1 - points[i].x / 480.0f;
+                landmarkY[i] = points[i].y / 640.0f;
+            }
+
+            mView.onGetFaceLandmark(landmarkX, landmarkY, mouthAh);
+        }
     }
 }
