@@ -125,6 +125,12 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private OrnamentAdapter mOrnamentAdapter;
     private List<Ornament> mOrnaments;
 
+    // 特效列表
+    private CustomBottomSheet mEffectSheet;
+    private RecyclerView mRvEffect;
+    private FilterAdapter mEffectAdapter;
+    private List<Filter> mEffects;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +154,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         initCommonView();
         initFilterSheet();
         initOrnamentSheet();
+        initEffectSheet();
     }
 
     private void initSurfaceView() {
@@ -253,7 +260,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                         mOrnamentSheet.show();
                         break;
                     case R.id.iv_effect:
-                        Toast.makeText(mContext, "click effect", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(mContext, "click effect", Toast.LENGTH_SHORT).show();
+                        mEffectSheet.show();
                         break;
                     case R.id.iv_mask:
                         Toast.makeText(mContext, "click mask", Toast.LENGTH_SHORT).show();
@@ -307,6 +315,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             public void onItemClick(int position) {
                 mOrnamentSheet.dismiss();
                 Ornament ornament = mOrnaments.get(position);
+                if (position == 0) ornament = null;
                 ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
                 ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
             }
@@ -324,6 +333,32 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
         mOrnaments.addAll(OrnamentFactory.getPresetOrnament());
         mOrnamentAdapter.notifyDataSetChanged();
+    }
+
+    private void initEffectSheet() {
+        mEffects = new ArrayList<>();
+        mEffectAdapter = new FilterAdapter(mContext, mEffects);
+        mEffectAdapter.setOnItemClickListener(new FilterAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int id) {
+                mEffectSheet.dismiss();
+                mCurrentFilterId = id;
+                setSingleFilter(mController, mCurrentFilterId);
+            }
+        });
+
+        View sheetView = LayoutInflater.from(mContext)
+                .inflate(R.layout.layout_bottom_sheet, null);
+        mRvEffect = (RecyclerView) sheetView.findViewById(R.id.rv_gallery);
+        mRvEffect.setAdapter(mEffectAdapter);
+        mRvEffect.setLayoutManager(new GridLayoutManager(mContext, 4));
+        mEffectSheet = new CustomBottomSheet(mContext);
+        mEffectSheet.setContentView(sheetView);
+        mEffectSheet.getWindow().findViewById(R.id.design_bottom_sheet)
+                .setBackgroundResource(android.R.color.transparent);
+
+        mEffects.addAll(FilterFactory.getPresetEffect());
+        mEffectAdapter.notifyDataSetChanged();
     }
 
     // 初始化的Runnable

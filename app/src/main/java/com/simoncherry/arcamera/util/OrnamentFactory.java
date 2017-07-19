@@ -17,6 +17,7 @@ public class OrnamentFactory {
 
     public static List<Ornament> getPresetOrnament() {
         List<Ornament> ornaments = new ArrayList<>();
+        ornaments.add(getNoOrnament());
 //        ornaments.add(getGlass());
 //        ornaments.add(getMoustache());
 //        ornaments.add(getHeart());
@@ -30,6 +31,13 @@ public class OrnamentFactory {
 //        ornaments.add(getIronMan());
 //        ornaments.add(getRingHat());
         return ornaments;
+    }
+
+    private static Ornament getNoOrnament() {
+        Ornament ornament = new Ornament();
+        ornament.setModelResId(-1);
+        ornament.setImgResId(R.drawable.ic_remove);
+        return ornament;
     }
 
 //    private Ornament getGlass() {
