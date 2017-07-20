@@ -40,6 +40,8 @@ public class My3DRenderer extends Renderer {
     private boolean mIsFaceMask = false;
     // 用于静态3D模型
     private Vector3 mAccValues;
+    private float mTransX = 0.0f;
+    private float mTransY = 0.0f;
     private float mScale = 1.0f;
     // 用于动态3D模型
     private List<DynamicPoint> mPoints = new ArrayList<>();
@@ -72,8 +74,8 @@ public class My3DRenderer extends Renderer {
     // 设置3D模型的平移
     public void setTransition(float x, float y, float z) {
         if (!mIsFaceMask) {
-            getCurrentCamera().setX(x);
-            getCurrentCamera().setY(y);
+            mTransX = x;
+            mTransY = y;
             setScale(z);
         }
     }
@@ -87,8 +89,6 @@ public class My3DRenderer extends Renderer {
     protected void initScene() {
         try {
             mContainer = new Object3D();
-            mContainer.setScale(1.0f);
-            mContainer.setRotation(0, 0, 0);
             getCurrentScene().addChild(mContainer);
             getCurrentScene().getCamera().setZ(5.5);
 
@@ -114,6 +114,9 @@ public class My3DRenderer extends Renderer {
             mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
             // 处理3D模型的缩放
             mContainer.setScale(mScale);
+            // 处理3D模型的平移
+            getCurrentCamera().setX(mTransX);
+            getCurrentCamera().setY(mTransY);
         } else {
             Log.e(TAG, "动态模型");
             if (mPoints != null && mPoints.size() > 0) {
@@ -149,8 +152,6 @@ public class My3DRenderer extends Renderer {
             if (mOrnament != null) {
                 mIsOrnamentVisible = mOrnament.isVisible();
                 mContainer.removeChild(mOrnament);
-                mContainer.setScale(1.0f);
-                mContainer.setRotation(0, 0, 0);
             }
 
             if (mOrnamentModel != null) {
@@ -184,6 +185,12 @@ public class My3DRenderer extends Renderer {
                     mOrnament.getMaterial().setColor(color);
                 }
                 mGeometry3D = mOrnament.getGeometry();
+
+                mContainer.setScale(1.0f);
+                mContainer.setRotation(0, 0, 0);
+                mContainer.setPosition(0, 0, 0);
+                getCurrentCamera().setX(0);
+                getCurrentCamera().setY(0);
 
                 mOrnament.setVisible(mIsOrnamentVisible);
                 mContainer.addChild(mOrnament);
