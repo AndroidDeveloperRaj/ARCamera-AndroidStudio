@@ -20,16 +20,30 @@ import com.sensetime.stmobileapi.STMobileMultiTrack106;
 import com.sensetime.stmobileapi.STUtils;
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.util.BitmapUtils;
+import com.simoncherry.arcamera.util.LandmarkUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SwapFaceActivity extends AppCompatActivity {
     private static final String TAG = SwapFaceActivity.class.getSimpleName();
     private static final int RESULT_LOAD_IMG = 123;
-    private static final int RESULT_FOR_SWAP = 456;
     private static final int ST_MOBILE_TRACKING_ENABLE_FACE_ACTION = 0x00000020;
 
     private ImageView ivImg;
 
     private STMobileMultiTrack106 tracker;
+
+    private String mCurrentImgPath = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +76,7 @@ public class SwapFaceActivity extends AppCompatActivity {
         btnSwap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                replaceTexture();
             }
         });
     }
@@ -82,9 +96,9 @@ public class SwapFaceActivity extends AppCompatActivity {
                 Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
                 cursor.moveToFirst();
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                String imgPath = cursor.getString(columnIndex);
-                if (imgPath != null) {
-                    ivImg.setImageBitmap(BitmapUtils.decodeSampledBitmapFromFilePath(imgPath, ivImg.getWidth(), ivImg.getHeight()));
+                mCurrentImgPath = cursor.getString(columnIndex);
+                if (mCurrentImgPath != null) {
+                    ivImg.setImageBitmap(BitmapUtils.decodeSampledBitmapFromFilePath(mCurrentImgPath, ivImg.getWidth(), ivImg.getHeight()));
                 }
             }
         }
@@ -161,6 +175,200 @@ public class SwapFaceActivity extends AppCompatActivity {
 
                 index ++;
             }
+        }
+    }
+
+    private void replaceTexture() {
+        if (mCurrentImgPath == null) {
+            Toast.makeText(this, "先点击Load加载第一张图片", Toast.LENGTH_SHORT).show();
+        } else {
+            String dirName = LandmarkUtils.getDir("/OpenGLDemo/txt/");
+            String fileName = LandmarkUtils.getMD5(mCurrentImgPath);
+            String filePath = dirName + fileName + ".txt";
+            File file = new File(filePath);
+            if (!file.exists()) {
+                Toast.makeText(this, "关键点文本不存在", Toast.LENGTH_SHORT).show();
+            } else {
+//                Toast.makeText(this, "关键点文本存在", Toast.LENGTH_SHORT).show();
+                List<String> coordinates = readCoordinatesFromTxt(filePath);
+                if (coordinates != null && coordinates.size() >= 106) {
+                    int size[] = BitmapUtils.getImageWidthHeight(mCurrentImgPath);
+                    int imgWidth = size[0];
+                    int imgHeight = size[1];
+
+                    PointF[] tmp = new PointF[106];
+                    PointF[] points = new PointF[44];
+                    for (int i=0; i<106; i++) {
+                        String coordinate = coordinates.get(i);
+                        String[] point_str = coordinate.split(" ");
+                        float x = Integer.parseInt(point_str[0]) / (float)imgWidth;
+                        float y = 1.0f - Integer.parseInt(point_str[1]) / (float)imgHeight  + 0.03f;  // FIXME -- why + 0.03
+                        tmp[i] = new PointF(x, y);
+                    }
+
+                    for (int i=0; i<44; i++) {
+                        points[i] = getRemapPoint(tmp, i);
+                    }
+
+                    // =========
+                    // 读取预设模型base_mask_obj
+                    StringBuilder stringBuilder = new StringBuilder();
+                    InputStream is = getResources().openRawResource(R.raw.base_face_uv3_obj);
+                    try {
+                        InputStreamReader reader = new InputStreamReader(is);
+                        BufferedReader br = new BufferedReader(reader);
+                        for(String str; (str = br.readLine()) != null; ) {  // 这里不能用while(br.readLine()) != null) 因为循环条件已经读了一条
+                            stringBuilder.append(str).append("\n");
+                        }
+                        br.close();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    String obj_str = stringBuilder.toString();
+                    Log.e(TAG, "read base_mask_obj: " + obj_str);
+                    // ========
+
+                    DecimalFormat decimalFormat = new DecimalFormat(".0000");
+                    // base_mask_obj第49至第92行定义UV坐标
+                    String[] ss = obj_str.split("\n");
+                    int i = 48;
+                    for (PointF point : points) {
+                        float x = point.x ;
+                        float y = point.y;
+                        String string = "vt " + decimalFormat.format(x) + " " + decimalFormat.format(y);
+                        ss[i] = string;
+                        i++;
+                    }
+
+                    String objPath = dirName + fileName + "_obj";
+                    try {
+                        FileWriter writer = new FileWriter(objPath);
+                        for (String s : ss) {
+                            writer.write(s + "\n");
+                        }
+                        writer.flush();
+                        writer.close();
+                        Toast.makeText(this, "生成新的OBJ", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, e.toString());
+                    }
+                }
+            }
+        }
+    }
+
+    private static List<String> readCoordinatesFromTxt(String filePath) {
+        final List<String> coordinate = new ArrayList<>();
+        try {
+            FileReader fileReader = new FileReader(filePath);
+            BufferedReader br = new BufferedReader(fileReader);
+            for(String str; (str = br.readLine()) != null; ) {  // 这里不能用while(br.readLine()) != null) 因为循环条件已经读了一条
+                coordinate.add(str);
+            }
+            br.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return coordinate;
+    }
+
+    private PointF getRemapPoint(PointF[] tmp, int index) {
+        index += 1;
+        switch (index) {
+            case 1:
+                return tmp[0];
+            case 2:
+                return tmp[52];
+            case 3:
+                return tmp[34];
+            case 4:
+                return tmp[3];
+            case 5:
+                return tmp[8];
+            case 6:
+                return tmp[12];
+            case 7:
+                return tmp[84];
+            case 8:
+                return tmp[61];
+            case 9:
+                return tmp[90];
+            case 10:
+                return tmp[20];
+            case 11:
+                return tmp[24];
+            case 12:
+                return tmp[29];
+            case 13:
+                return tmp[32];
+            case 14:
+                return tmp[41];
+            case 15:
+                return tmp[39];
+            case 16:
+                return tmp[43];
+            case 17:
+                return tmp[58];
+            case 18:
+                return new PointF((tmp[36].x + tmp[39].x) * 0.5f, (tmp[36].y + tmp[39].y) * 0.5f);
+            case 19:
+                return tmp[36];
+            case 20:
+                return tmp[55];
+            case 21:
+                return tmp[82];
+            case 22:
+                return tmp[46];
+            case 23:
+                return tmp[83];
+            case 24:
+                return tmp[49];
+            case 25:
+                return tmp[53];
+            case 26:
+                return tmp[72];
+            case 27:
+                return tmp[54];
+            case 28:
+                return tmp[57];
+            case 29:
+                return tmp[73];
+            case 30:
+                return tmp[56];
+            case 31:
+                return tmp[59];
+            case 32:
+                return tmp[75];
+            case 33:
+                return tmp[60];
+            case 34:
+                return tmp[63];
+            case 35:
+                return tmp[76];
+            case 36:
+                return tmp[62];
+            case 37:
+                return tmp[97];
+            case 38:
+                return tmp[98];
+            case 39:
+                return tmp[99];
+            case 40:
+                return tmp[102];
+            case 41:
+                return tmp[103];
+            case 42:
+                return tmp[93];
+            case 43:
+                return tmp[101];
+            case 44:
+                return tmp[16];
+            default:
+                return tmp[0];
         }
     }
 }
