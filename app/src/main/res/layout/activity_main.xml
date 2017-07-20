@@ -20,6 +20,14 @@
             android:text="主页面重构中；下面全是测试页面"/>
 
         <Button
+            android:id="@+id/btn_swap_face"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:text="Swap Face"/>
+
+        <Button
             android:id="@+id/btn_image_renderer"
             android:layout_width="250dp"
             android:layout_height="50dp"

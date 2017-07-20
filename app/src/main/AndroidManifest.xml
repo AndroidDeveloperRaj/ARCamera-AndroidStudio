@@ -8,7 +8,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -29,8 +29,8 @@
         </activity>
         <activity
             android:name=".ui.activity.ARCamActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <!--以下都是测试页面-->
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <!-- 以下都是测试页面 -->
         <activity android:name=".ui.activity.CameraActivity" />
         <activity android:name=".ui.activity.ImageActivity" />
         <activity android:name=".ui.activity.CamAdjustActivity" />
@@ -41,6 +41,7 @@
         <activity android:name=".ui.activity.DynamicModelActivity" />
         <activity android:name=".ui.activity.DynamicModel2Activity" />
         <activity android:name=".ui.activity.DynamicModel3Activity" />
+        <activity android:name=".ui.activity.SwapFaceActivity"></activity>
     </application>
 
 </manifest>

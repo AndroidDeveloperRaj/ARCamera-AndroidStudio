@@ -200,8 +200,8 @@ public class STUtils {
 			if(frontCamera) {
 				p.x = width - p.x;
 			}
-			//canvas.drawPoint(p.x, p.y, paint);
-			canvas.drawText(String.valueOf(i), p.x, p.y, paint);
+			canvas.drawPoint(p.x, p.y, paint);
+			//canvas.drawText(String.valueOf(i), p.x, p.y, paint);
 			i++;
 		}
 	}

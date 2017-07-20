@@ -25,7 +25,7 @@ android {
 
     sourceSets.main.jni.srcDirs = []
     //禁止自带的ndk功能
-    sourceSets.main.jniLibs.srcDirs = ['src/main/libs','src/main/jniLibs']
+    sourceSets.main.jniLibs.srcDirs = ['src/main/libs', 'src/main/jniLibs']
 
     task ndkBuild(type: Exec, description: 'Compile JNI source with NDK') {
         Properties properties = new Properties()
@@ -49,9 +49,9 @@ android {
         def ndkDir = properties.getProperty('ndk.dir')
 
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            commandLine "$ndkDir/ndk-build.cmd",'clean', '-C', file('src/main/jni').absolutePath
+            commandLine "$ndkDir/ndk-build.cmd", 'clean', '-C', file('src/main/jni').absolutePath
         } else {
-            commandLine "$ndkDir/ndk-build",'clean', '-C', file('src/main/jni').absolutePath
+            commandLine "$ndkDir/ndk-build", 'clean', '-C', file('src/main/jni').absolutePath
         }
     }
 
@@ -63,12 +63,12 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
+    compile project(':stmobile')
+    compile project(':rajawali')
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-
-    compile project(':stmobile')
-    compile project(':rajawali')
 }

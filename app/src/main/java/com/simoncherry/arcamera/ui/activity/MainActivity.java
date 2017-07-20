@@ -21,6 +21,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // 下面这些页面全是测试用的
+        findViewById(R.id.btn_swap_face).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(SwapFaceActivity.class);
+            }
+        });
+
         findViewById(R.id.btn_image_renderer).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
