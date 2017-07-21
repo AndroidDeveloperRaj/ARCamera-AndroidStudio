@@ -21,6 +21,7 @@ public class Ornament {
     private int color;
     private List<Animation3D> animation3Ds;
     private int textureResId = -1;
+    private String texturePath = null;
     private boolean isFaceMask;
 
     public int getModelResId() {
@@ -117,6 +118,14 @@ public class Ornament {
 
     public void setTextureResId(int textureResId) {
         this.textureResId = textureResId;
+    }
+
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    public void setTexturePath(String texturePath) {
+        this.texturePath = texturePath;
     }
 
     public boolean isFaceMask() {

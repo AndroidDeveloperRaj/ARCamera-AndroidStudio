@@ -141,7 +141,7 @@ public class ARCamPresenter implements ARCamContract.Presenter {
         tmp = (float) (tmp / Math.cos(Math.PI*yaw/180));  // 根据旋转角度还原两眼距离
         tmp = tmp * 0.04f;  // 0 ~ 25 -> 0 ~ 1
         float z = tmp * 3.0f + 1.0f;
-        Log.e(TAG, "transition: x= " + x + ", y= " + y + ", z= " + z);
+        Log.i(TAG, "transition: x= " + x + ", y= " + y + ", z= " + z);
 
         mView.onGet3dModelTransition(x, y, z);
     }

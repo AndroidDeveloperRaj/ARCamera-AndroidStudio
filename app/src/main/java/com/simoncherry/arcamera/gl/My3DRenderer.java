@@ -109,7 +109,7 @@ public class My3DRenderer extends Renderer {
         }
 
         if (!mIsFaceMask) {
-            Log.e(TAG, "静态模型");
+            Log.i(TAG, "静态模型");
             // 处理3D模型的旋转
             mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
             // 处理3D模型的缩放
@@ -118,7 +118,7 @@ public class My3DRenderer extends Renderer {
             getCurrentCamera().setX(mTransX);
             getCurrentCamera().setY(mTransY);
         } else {
-            Log.e(TAG, "动态模型");
+            Log.i(TAG, "动态模型");
             if (mPoints != null && mPoints.size() > 0) {
                 mIsChanging = true;
                 FloatBuffer vertBuffer = mGeometry3D.getVertices();
@@ -126,7 +126,7 @@ public class My3DRenderer extends Renderer {
                 try {  // FIXME
                     for (int i=0; i<mPoints.size(); i++) {
                         DynamicPoint point = mPoints.get(i);
-                        Log.e(TAG, "No." + i + ": " + point.toString());
+                        Log.i(TAG, "No." + i + ": " + point.toString());
                         changePoint(vertBuffer, point.getIndex(), point.getX(), point.getY(), point.getZ());
                     }
                 } catch (Exception e) {
@@ -155,24 +155,41 @@ public class My3DRenderer extends Renderer {
             }
 
             if (mOrnamentModel != null) {
-                LoaderOBJ objParser1 = new LoaderOBJ(mContext.getResources(), mTextureManager, mOrnamentModel.getModelResId());
-                objParser1.parse();
-                mOrnament = objParser1.getParsedObject();
-
                 mIsFaceMask = mOrnamentModel.isFaceMask();
-                if (mIsFaceMask) {
-                    int textureResId = mOrnamentModel.getTextureResId();
-                    if (textureResId <= 0) {  // 如果没有有效的贴图资源Id
-                        mIsFaceMask = false;
-                    } else {
-                        ATexture texture = mOrnament.getMaterial().getTextureList().get(0);
-                        mOrnament.getMaterial().removeTexture(texture);
+                int textureResId = mOrnamentModel.getTextureResId();
+                String texturePath = mOrnamentModel.getTexturePath();
 
-                        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), textureResId);
-                        if (bitmap == null) {  // 如果无法生成的贴图Bitmap
+                if (texturePath != null) {
+                    String objDir = "OpenGLDemo/txt/";
+                    String objName = "base_face_uv3_obj";
+                    LoaderOBJ parser = new LoaderOBJ(this, objDir + objName);
+                    parser.parse();
+                    mOrnament = parser.getParsedObject();
+                    ATexture texture = mOrnament.getMaterial().getTextureList().get(0);
+                    mOrnament.getMaterial().removeTexture(texture);
+
+                    Bitmap bitmap = BitmapFactory.decodeFile(texturePath);
+                    mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
+                    mOrnament.getMaterial().enableLighting(false);
+
+                } else {
+                    LoaderOBJ objParser1 = new LoaderOBJ(mContext.getResources(), mTextureManager, mOrnamentModel.getModelResId());
+                    objParser1.parse();
+                    mOrnament = objParser1.getParsedObject();
+
+                    if (mIsFaceMask) {
+                        if (textureResId <= 0) {  // 如果没有有效的贴图资源Id
                             mIsFaceMask = false;
                         } else {
-                            mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
+                            ATexture texture = mOrnament.getMaterial().getTextureList().get(0);
+                            mOrnament.getMaterial().removeTexture(texture);
+
+                            Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), textureResId);
+                            if (bitmap == null) {  // 如果无法生成的贴图Bitmap
+                                mIsFaceMask = false;
+                            } else {
+                                mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
+                            }
                         }
                     }
                 }

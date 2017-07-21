@@ -24,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sensetime.stmobileapi.STMobileFaceAction;
+import com.sensetime.stmobileapi.STMobileMultiTrack106;
+import com.simoncherry.arcamera.MediaLoaderCallback;
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.codec.CameraRecorder;
 import com.simoncherry.arcamera.contract.ARCamContract;
@@ -39,13 +41,16 @@ import com.simoncherry.arcamera.gl.TextureController;
 import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Filter;
 import com.simoncherry.arcamera.model.Ornament;
+import com.simoncherry.arcamera.model.Photo;
 import com.simoncherry.arcamera.presenter.ARCamPresenter;
 import com.simoncherry.arcamera.ui.adapter.FilterAdapter;
 import com.simoncherry.arcamera.ui.adapter.OrnamentAdapter;
+import com.simoncherry.arcamera.ui.adapter.PhotoAdapter;
 import com.simoncherry.arcamera.ui.custom.CircularProgressView;
 import com.simoncherry.arcamera.ui.custom.CustomBottomSheet;
 import com.simoncherry.arcamera.util.Accelerometer;
-import com.simoncherry.arcamera.util.FileUtls;
+import com.simoncherry.arcamera.util.FileUtils;
+import com.simoncherry.arcamera.util.LandmarkUtils;
 import com.simoncherry.arcamera.util.OrnamentFactory;
 import com.simoncherry.arcamera.util.PermissionUtils;
 
@@ -135,8 +140,11 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     // 面具列表
     private CustomBottomSheet mMaskSheet;
     private RecyclerView mRvMask;
-    private OrnamentAdapter mMaskAdapter;
-    private List<Ornament> mMasks;
+    private PhotoAdapter mMaskAdapter;
+    private List<Photo> mMasks;
+    private MediaLoaderCallback mediaLoaderCallback = null;
+    private STMobileMultiTrack106 tracker;
+    private static final int ST_MOBILE_TRACKING_ENABLE_FACE_ACTION = 0x00000020;
 
 
     @Override
@@ -337,6 +345,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 .setBackgroundResource(android.R.color.transparent);
 
         mOrnaments.addAll(OrnamentFactory.getPresetOrnament());
+        mOrnaments.addAll(OrnamentFactory.getPresetMask());
         mOrnamentAdapter.notifyDataSetChanged();
     }
 
@@ -368,15 +377,24 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
     private void initMaskSheet() {
         mMasks = new ArrayList<>();
-        mMaskAdapter = new OrnamentAdapter(mContext, mMasks);
-        mMaskAdapter.setOnItemClickListener(new OrnamentAdapter.OnItemClickListener() {
+        mMaskAdapter = new PhotoAdapter(mContext, mMasks);
+        mMaskAdapter.setOnItemClickListener(new PhotoAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(int position) {
+            public void onItemClick(String path) {
                 mMaskSheet.dismiss();
-                Ornament mask = mMasks.get(position);
-                if (position == 0) mask = null;
-                ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(mask);
-                ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
+                //Toast.makeText(mContext, path, Toast.LENGTH_SHORT).show();
+                if (tracker == null) {
+                    tracker = new STMobileMultiTrack106(mContext, ST_MOBILE_TRACKING_ENABLE_FACE_ACTION);
+                    int max = 1;
+                    tracker.setMaxDetectableFaces(max);
+                }
+                boolean isSuccess = LandmarkUtils.replaceTexture(mContext, tracker, path);
+                Toast.makeText(mContext, "isSuccess: " + isSuccess, Toast.LENGTH_SHORT).show();
+                if (isSuccess) {
+                    Ornament ornament = OrnamentFactory.getMask(path);
+                    ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
+                    ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
+                }
             }
         });
 
@@ -390,8 +408,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         mMaskSheet.getWindow().findViewById(R.id.design_bottom_sheet)
                 .setBackgroundResource(android.R.color.transparent);
 
-        mMasks.addAll(OrnamentFactory.getPresetMask());
-        mMaskAdapter.notifyDataSetChanged();
+        loadLocalImage();
     }
 
     // 初始化的Runnable
@@ -460,8 +477,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 mp4Recorder = new CameraRecorder();
             }
             long time = System.currentTimeMillis();
-            String savePath = FileUtls.getPath(getApplicationContext(), "video/", time + ".mp4");
-            mp4Recorder.setSavePath(FileUtls.getPath(getApplicationContext(), "video/", time+""), "mp4");
+            String savePath = FileUtils.getPath(getApplicationContext(), "video/", time + ".mp4");
+            mp4Recorder.setSavePath(FileUtils.getPath(getApplicationContext(), "video/", time+""), "mp4");
             try {
                 mp4Recorder.prepare(VIDEO_WIDTH, VIDEO_HEIGHT);
                 mp4Recorder.start();
@@ -676,5 +693,18 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                         + mouthAh + "\nHEAD_YAW:" + headYaw + "\nHEAD_PITCH:" + headPitch + "\nBROW_JUMP:" + browJump);
             }
         });
+    }
+
+    private void loadLocalImage() {
+        mediaLoaderCallback = new MediaLoaderCallback(mContext);
+        mediaLoaderCallback.setOnLoadFinishedListener(new MediaLoaderCallback.OnLoadFinishedListener() {
+            @Override
+            public void onLoadFinished(List<Photo> data) {
+                //Toast.makeText(mContext, "Total Size: " + data.size(), Toast.LENGTH_SHORT).show();
+                mMasks.addAll(data);
+                mMaskAdapter.notifyDataSetChanged();
+            }
+        });
+        getSupportLoaderManager().initLoader(0, null, mediaLoaderCallback);
     }
 }

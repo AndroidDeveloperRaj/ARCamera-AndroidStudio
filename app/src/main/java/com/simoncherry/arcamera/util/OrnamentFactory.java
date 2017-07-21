@@ -191,7 +191,7 @@ public class OrnamentFactory {
 
     public static List<Ornament> getPresetMask() {
         List<Ornament> ornaments = new ArrayList<>();
-        ornaments.add(getNoOrnament());
+//        ornaments.add(getNoOrnament());
         ornaments.add(getMask(R.drawable.average_male, R.drawable.mask_man));
         ornaments.add(getMask(R.drawable.average_female, R.drawable.mask_woman));
         ornaments.add(getMask(R.drawable.lion_texture, R.drawable.mask_lion));
@@ -205,6 +205,19 @@ public class OrnamentFactory {
         ornament.setModelResId(R.raw.base_face_uv3_obj);
         ornament.setTextureResId(textureResId);
         ornament.setImgResId(imgResId);
+        ornament.setScale(0.25f);
+        ornament.setOffset(0, 0, 0);
+        ornament.setRotate(0, 0, 0);
+        ornament.setColor(NO_COLOR);
+        return ornament;
+    }
+
+    public static Ornament getMask(String texturePath) {
+        Ornament ornament = new Ornament();
+        ornament.setFaceMask(true);
+        ornament.setModelResId(-1);
+        ornament.setTexturePath(texturePath);
+        ornament.setImgResId(0);
         ornament.setScale(0.25f);
         ornament.setOffset(0, 0, 0);
         ornament.setRotate(0, 0, 0);

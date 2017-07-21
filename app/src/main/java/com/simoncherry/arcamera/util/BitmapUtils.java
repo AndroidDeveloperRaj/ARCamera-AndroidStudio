@@ -2,6 +2,7 @@ package com.simoncherry.arcamera.util;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -9,6 +10,8 @@ import android.view.View;
  */
 
 public class BitmapUtils {
+
+    private final static String TAG = BitmapUtils.class.getSimpleName();
 
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
@@ -83,6 +86,36 @@ public class BitmapUtils {
                 return Bitmap.createScaledBitmap(bitmap, reqWidth, reqHeight, true);
             }
         }
+    }
+
+    public static Bitmap getRequireWidthBitmap(String path, int reqWidth) {
+        int[] size = getImageWidthHeight(path);
+        int width = size[0];
+        int height = size[1];
+        float ratio = (float)height / width;
+        Log.e(TAG, "src bitmap width: " + width);
+        Log.e(TAG, "src bitmap height: " + height);
+        Log.e(TAG, "src bitmap ratio: " + ratio);
+
+        Log.e(TAG, "bitmap reqWidth: " + reqWidth);
+
+        if (width > reqWidth) {
+            width = reqWidth;
+            height = (int) (reqWidth * ratio);
+        }
+
+        // 宽高不能是奇数
+        if (width % 2 == 1) {
+            width++;
+        }
+        if (height % 2 == 1) {
+            height++;
+        }
+        Log.e(TAG, "dst bitmap width: " + width);
+        Log.e(TAG, "dst bitmap height: " + height);
+
+        Bitmap bitmap = decodeSampledBitmapFromFilePath(path, width, height);  // 这个方法只是每次除以2，直到小于等于指定的大小，而不是缩小到指定的大小
+        return Bitmap.createScaledBitmap(bitmap, width, height, true);
     }
 
     public static Bitmap getViewBitmap(View view){
