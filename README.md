@@ -5,7 +5,10 @@ AR相机
   
 在大神的开源项目基础上扩展了一些滤镜。
   
-新增：动态人脸模型。
+另外，通过动态人脸模型还实现了类似Faceu的换脸效果。
+  
+项目中用到的滤镜、3D模型都不是那种打包加密的文件，可随意添加、修改。
+  
   
 Base on 
 ----------------------------------- 
@@ -14,16 +17,13 @@ Base on
 
 Screenshot
 -----------------------------------
-### 吐彩虹
-![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_1.gif)
-![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_2.gif)
+### 包括调色滤镜、特效滤镜、静态3D模型、动态3D模型（实时修改模型坐标点）
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_9.gif)
 
-### 眼睛冒火、恶灵
-![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_3.gif)
-![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_4.gif)
+### 将指定人脸（来自手机相册，非预置）作为贴图，修改3D模型文件中贴图坐标点，可实时换脸
+![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_8.gif)
 
-### 换脸
-![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_5.gif)
+### 非人脸就换不了了，是用Photoshop改的
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_6.gif)
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_7.gif)
 
