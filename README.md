@@ -8,6 +8,8 @@ AR相机
 另外，通过动态人脸模型还实现了类似Faceu的换脸效果。
   
 项目中用到的滤镜、3D模型都不是那种打包加密的文件，可随意添加、修改。
+  
+[这篇博客分享开发思路](http://blog.csdn.net/torchlight2012/article/details/75722424)
   
   
 Base on 
