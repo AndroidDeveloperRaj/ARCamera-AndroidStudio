@@ -78,8 +78,8 @@ public class ARCamPresenter implements ARCamContract.Presenter {
                 byte g = tmpArray[i+2];
                 byte b = tmpArray[i+3];
                 // 取Rajawali不透明的部分
-                // FIXME -- 贴图中透明和纯黑色部分的ARGB都是全0，导致纯黑色的地方被错误过滤。非技术上的解决方法是改贴图。。。
-                if (a != 0) {
+                boolean isBackground = r == 0 && g == 0 && b == 0 && a == 0;
+                if (!isBackground) {
                     bytes[i] = a;
                     bytes[i + 1] = r;
                     bytes[i + 2] = g;

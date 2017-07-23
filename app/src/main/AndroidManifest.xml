@@ -41,7 +41,7 @@
         <activity android:name=".ui.activity.DynamicModelActivity" />
         <activity android:name=".ui.activity.DynamicModel2Activity" />
         <activity android:name=".ui.activity.DynamicModel3Activity" />
-        <activity android:name=".ui.activity.SwapFaceActivity"></activity>
+        <activity android:name=".ui.activity.SwapFaceActivity" />
     </application>
 
 </manifest>

@@ -305,14 +305,14 @@ public class Record3DActivity extends AppCompatActivity implements FrameCallback
                         .order(ByteOrder.LITTLE_ENDIAN);
                 buf.asIntBuffer().put(mRajawaliPixels);
                 mRajawaliPixels = null;
-                // FIXME -- 纯黑色部分的ARGB全是0，贴图中有纯黑色的地方就过滤掉了。非技术上的解决方法是改贴图。。。
                 byte[] tmpArray = buf.array();
                 for (int i=0; i<bytes.length; i+=4) {
                     byte a = tmpArray[i];
                     byte r = tmpArray[i+1];
                     byte g = tmpArray[i+2];
                     byte b = tmpArray[i+3];
-                    if (a != 0) {
+                    boolean isBackground = r == 0 && g == 0 && b == 0 && a == 0;
+                    if (!isBackground) {
                         bytes[i] = a;
                         bytes[i + 1] = r;
                         bytes[i + 2] = g;
