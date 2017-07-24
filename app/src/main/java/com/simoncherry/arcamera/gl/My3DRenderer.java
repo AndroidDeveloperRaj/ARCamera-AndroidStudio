@@ -3,11 +3,17 @@ package com.simoncherry.arcamera.gl;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.util.Log;
 import android.view.MotionEvent;
 
 import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Ornament;
+import com.simoncherry.arcamera.util.BitmapUtils;
 import com.simoncherry.arcamera.util.OrnamentFactory;
 
 import org.rajawali3d.Geometry3D;
@@ -46,6 +52,13 @@ public class My3DRenderer extends Renderer {
     // 用于动态3D模型
     private List<DynamicPoint> mPoints = new ArrayList<>();
     private boolean mIsChanging = false;
+
+    // 根据肤色更改模型贴图的颜色
+    private int mSkinColor = 0xffd4c9b5;
+
+    public void setSkinColor(int mSkinColor) {
+        this.mSkinColor = mSkinColor;
+    }
 
 
     public My3DRenderer(Context context) {
@@ -119,21 +132,22 @@ public class My3DRenderer extends Renderer {
             getCurrentCamera().setY(mTransY);
         } else {
             Log.i(TAG, "动态模型");
-            if (mPoints != null && mPoints.size() > 0) {
+            if (!mIsChanging && mPoints != null && mPoints.size() > 0) {
                 mIsChanging = true;
-                FloatBuffer vertBuffer = mGeometry3D.getVertices();
 
                 try {  // FIXME
+                    FloatBuffer vertBuffer = mGeometry3D.getVertices();
                     for (int i=0; i<mPoints.size(); i++) {
                         DynamicPoint point = mPoints.get(i);
                         Log.i(TAG, "No." + i + ": " + point.toString());
                         changePoint(vertBuffer, point.getIndex(), point.getX(), point.getY(), point.getZ());
                     }
+                    mGeometry3D.changeBufferData(mGeometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
+
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
                 }
 
-                mGeometry3D.changeBufferData(mGeometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
                 mIsChanging = false;
             }
         }
@@ -168,7 +182,9 @@ public class My3DRenderer extends Renderer {
                     ATexture texture = mOrnament.getMaterial().getTextureList().get(0);
                     mOrnament.getMaterial().removeTexture(texture);
 
-                    Bitmap bitmap = BitmapFactory.decodeFile(texturePath);
+                    Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFilePath(texturePath, 300, 300);
+                    // 调整肤色
+                    bitmap = changeSkinColor(bitmap, mSkinColor);
                     mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
                     mOrnament.getMaterial().enableLighting(false);
 
@@ -188,7 +204,11 @@ public class My3DRenderer extends Renderer {
                             if (bitmap == null) {  // 如果无法生成的贴图Bitmap
                                 mIsFaceMask = false;
                             } else {
+                                mIsChanging = true;
+                                // 调整肤色
+                                bitmap = changeSkinColor(bitmap, mSkinColor);
                                 mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
+                                mIsChanging = false;
                             }
                         }
                     }
@@ -285,5 +305,64 @@ public class My3DRenderer extends Renderer {
         if (!mIsChanging) {
             this.mPoints = mPoints;
         }
+    }
+
+    private Bitmap changeSkinColor(Bitmap bitmap, int skinColor) {
+        if (bitmap != null) {
+            Bitmap texture = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+            int width = texture.getWidth();
+            int height = texture.getHeight();
+
+            int skinRed = Color.red(skinColor);
+            int skinGreen = Color.green(skinColor);
+            int skinBlue = Color.blue(skinColor);
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int pixel = texture.getPixel(x, y);
+                    int red = Color.red(pixel);
+                    int green = Color.green(pixel);
+                    int blue = Color.blue(pixel);
+
+                    // TODO
+                    // 将肤色与该点颜色进行混合
+                    // 在Photoshop里面看，“柔光”的效果是比较合适的。 “叠加”也类似，不过画面有点过饱和
+                    // 调色层在顶层并设为“柔光”，和人脸层在顶层并设为“柔光”是不同的
+                    // 理想的效果是前者，但是在网上找到的“柔光”代码实现的是后者
+                    // 由于没弄明白怎么改写，暂时先用“叠加”效果，然后降低饱和度
+                    red = overlay(skinRed, red);
+                    green = overlay(skinGreen, green);
+                    blue = overlay(skinBlue, blue);
+
+                    pixel = Color.rgb(red, green, blue);
+                    texture.setPixel(x, y, pixel);
+                }
+            }
+
+            // 降低饱和度
+            float saturation = 0.35f;
+            ColorMatrix cMatrix = new ColorMatrix();
+            cMatrix.setSaturation(saturation);
+
+            Paint paint = new Paint();
+            paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
+
+            Canvas canvas = new Canvas(texture);
+            canvas.drawBitmap(texture, 0, 0, paint);
+
+            return texture;
+        }
+        return null;
+    }
+
+    // 混合模式 -- 柔光
+    private int softLight(int A, int B) {
+        return (B < 128) ? (2 * ((A >> 1) + 64)) * (B / 255) : (255 - (2 * (255 - ((A >> 1) + 64)) * (255 - B) / 255));
+    }
+
+    // 混合模式 -- 叠加
+    private int overlay(int A, int B) {
+        return ((B < 128) ? (2 * A * B / 255) : (255 - 2 * (255 - A) * (255 - B) / 255));
     }
 }

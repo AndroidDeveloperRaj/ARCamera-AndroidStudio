@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sensetime.stmobileapi.STMobileFaceAction;
@@ -39,10 +44,12 @@ public class SwapFaceActivity extends AppCompatActivity {
     private static final int ST_MOBILE_TRACKING_ENABLE_FACE_ACTION = 0x00000020;
 
     private ImageView ivImg;
+    private TextView tvSkinColor;
 
     private STMobileMultiTrack106 tracker;
 
     private String mCurrentImgPath = null;
+    private int mSkinColor = 0xffd4c9b5;
 
 
     @Override
@@ -55,8 +62,10 @@ public class SwapFaceActivity extends AppCompatActivity {
         tracker.setMaxDetectableFaces(max);
 
         ivImg = (ImageView) findViewById(R.id.iv_img);
+        tvSkinColor = (TextView) findViewById(R.id.tv_skin_color);
         Button btnLoad = (Button) findViewById(R.id.btn_load);
         Button btnDetect = (Button) findViewById(R.id.btn_detect);
+        Button btnChangeSkin = (Button) findViewById(R.id.btn_change_skin);
         Button btnSwap = (Button) findViewById(R.id.btn_swap);
 
         btnLoad.setOnClickListener(new View.OnClickListener() {
@@ -70,6 +79,13 @@ public class SwapFaceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 detectFace();
+            }
+        });
+
+        btnChangeSkin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeSkinColor();
             }
         });
 
@@ -122,9 +138,13 @@ public class SwapFaceActivity extends AppCompatActivity {
                 STMobileFaceAction faceAction = faceActions[0];
                 PointF[] points = faceAction.getFace().getPointsArray();
                 if (points != null && points.length > 0) {
+                    // TODO
+                    getSkinColor(bitmap, points);
+
                     Canvas canvas = new Canvas(bitmap);
                     STUtils.drawPoints(canvas, points, ivImg.getWidth(), ivImg.getHeight(), false);
                     ivImg.setImageBitmap(bitmap);
+
                 } else {
                     Toast.makeText(this, "cannot get points", Toast.LENGTH_SHORT).show();
                 }
@@ -132,6 +152,105 @@ public class SwapFaceActivity extends AppCompatActivity {
                 Toast.makeText(this, "faceActions is null", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void getSkinColor(Bitmap bitmap, PointF[] points) {
+        PointF nosePos = points[44];
+        mSkinColor = bitmap.getPixel((int)nosePos.x, (int)nosePos.y);
+//        int redValue = Color.red(pixel);
+//        int greenValue = Color.green(pixel);
+//        int blueValue = Color.blue(pixel);
+//        int rgbValue = Color.rgb(redValue, greenValue, blueValue);
+
+        tvSkinColor.setText(Integer.toHexString(mSkinColor));
+        tvSkinColor.setBackgroundColor(mSkinColor);
+    }
+
+    private void changeSkinColor() {
+        Bitmap bitmap = BitmapUtils.getViewBitmap(ivImg);
+        bitmap = BitmapUtils.getRequireWidthBitmap(bitmap, 240);
+        if (bitmap != null) {
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+
+            int skinRed = Color.red(mSkinColor);
+            int skinGreen = Color.green(mSkinColor);
+            int skinBlue = Color.blue(mSkinColor);
+
+            for (int y=0; y<height; y++) {
+                for (int x=0; x<width; x++) {
+                    int pixel = bitmap.getPixel(x, y);
+                    int red = Color.red(pixel);
+                    int green = Color.green(pixel);
+                    int blue = Color.blue(pixel);
+
+//                    if (isSkin(red, green, blue)) {
+//                        red = softLight(red, skinRed);
+//                        green = softLight(green, skinGreen);
+//                        blue = softLight(blue, skinBlue);
+//                        pixel = Color.rgb(red, green, blue);
+//                        bitmap.setPixel(x, y, pixel);
+//                    }
+//                    else {
+//                        red = overlay(red, skinRed);
+//                        green = overlay(green, skinGreen);
+//                        blue = overlay(blue, skinBlue);
+////                        pixel = Color.rgb(red, green, blue);
+////                        bitmap.setPixel(x, y, pixel);
+//                    }
+
+//                    red = softLight(red, skinRed);
+//                    green = softLight(green, skinGreen);
+//                    blue = softLight(blue, skinBlue);
+
+//                    red = softLight(skinRed, red);
+//                    green = softLight(skinGreen, green);
+//                    blue = softLight(skinBlue, blue);
+
+                    red = overlay(skinRed, red);
+                    green = overlay(skinGreen, green);
+                    blue = overlay(skinBlue, blue);
+
+                    pixel = Color.rgb(red, green, blue);
+                    bitmap.setPixel(x, y, pixel);
+                }
+            }
+
+            float saturation = 0.35f;
+            ColorMatrix cMatrix = new ColorMatrix();
+            cMatrix.setSaturation(saturation);
+
+            Paint paint = new Paint();
+            paint.setColorFilter(new ColorMatrixColorFilter(cMatrix));
+
+            Canvas canvas = new Canvas(bitmap);
+            canvas.drawBitmap(bitmap, 0, 0, paint);
+
+            ivImg.setImageBitmap(bitmap);
+        }
+    }
+
+    public boolean isSkin(int r,int g,int b){
+        return r > 95 && g > 40 && b > 20 && r > g && r > b && (max(r, g, b) - min(r, g, b) > 15) && Math.abs(r - g) > 15;
+    }
+
+    public int min(int a,int b,int c){
+        if (a > b) a = b;
+        if ( a > c) a = c;
+        return a;
+    }
+    public int max(int a,int b,int c){
+        if (a < b) a = b;
+        if (a < c) a = c;
+        return a;
+    }
+
+    private int softLight(int A, int B) {
+        return (B < 128) ? (2 * ((A >> 1) + 64)) * (B / 255) : (255 - (2 * (255 - ((A >> 1) + 64)) * (255 - B) / 255));
+    }
+
+    private int overlay(int A, int B) {
+        return ((B < 128) ? (2 * A * B / 255) : (255 - 2 * (255 - A) * (255 - B) / 255));
     }
 
     private byte [] getNV21(int inputWidth, int inputHeight, Bitmap scaled) {

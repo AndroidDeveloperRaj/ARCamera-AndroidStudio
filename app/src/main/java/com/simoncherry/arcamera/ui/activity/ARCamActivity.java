@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -58,6 +59,7 @@ import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.ISurface;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -145,6 +147,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private MediaLoaderCallback mediaLoaderCallback = null;
     private STMobileMultiTrack106 tracker;
     private static final int ST_MOBILE_TRACKING_ENABLE_FACE_ACTION = 0x00000020;
+
+    private boolean mIsNeedSkinColor = false;
+    private PointF mSamplePoint = null;
 
 
     @Override
@@ -331,6 +336,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 if (position == 0) ornament = null;
                 ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
                 ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
+                // 获取人脸中心点的颜色
+                mIsNeedSkinColor = true;
+                mController.takePhoto();
             }
         });
 
@@ -394,6 +402,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                     Ornament ornament = OrnamentFactory.getMask(path);
                     ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
                     ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
+                    // 获取人脸中心点的颜色
+                    mIsNeedSkinColor = true;
+                    mController.takePhoto();
                 }
             }
         });
@@ -598,7 +609,27 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
     @Override
     public void onFrame(final byte[] bytes, long time) {
-        if (mp4Recorder != null && mFrameType == 1) {  // 处理录像
+        if (mIsNeedSkinColor) {  // 获取人脸中心点的颜色
+            Log.e(TAG, "isNeedSkinColor");
+            if (mSamplePoint != null) {
+                Bitmap bitmap = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+                ByteBuffer b = ByteBuffer.wrap(bytes);
+                bitmap.copyPixelsFromBuffer(b);
+
+                int x = (int) mSamplePoint.x;
+                int y = (int) mSamplePoint.y;
+                Log.e(TAG, "points[44]: x= " + x + ", y= " + y);
+                int pixel = bitmap.getPixel(x, y);
+                String skinColor = Integer.toHexString(pixel);
+                Log.e(TAG, "get Skin Color: " + skinColor);
+                bitmap.recycle();
+                mSamplePoint = null;
+                mIsNeedSkinColor = false;
+                // 根据肤色更改模型贴图的颜色
+                ((My3DRenderer) mISurfaceRenderer).setSkinColor(pixel);
+            }
+
+        } else if (mp4Recorder != null && mFrameType == 1) {  // 处理录像
             handleVideoFrame(bytes);
         } else {  // 处理拍照
             handlePhotoFrame(bytes);
@@ -642,6 +673,12 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
     @Override
     public void onGetFaceLandmark(float[] landmarkX, float[] landmarkY, int isMouthOpen) {
+        if (mIsNeedSkinColor) {
+            float x = landmarkX[44] * IMAGE_WIDTH;
+            float y = landmarkY[44] * IMAGE_HEIGHT;
+            mSamplePoint = new PointF(x, y);
+        }
+
         AFilter aFilter = mController.getLastFilter();
         if(aFilter != null && aFilter instanceof LandmarkFilter) {
             ((LandmarkFilter) aFilter).setLandmarks(landmarkX, landmarkY);
