@@ -1,6 +1,8 @@
 package com.simoncherry.arcamera.model;
 
+import org.rajawali3d.Object3D;
 import org.rajawali3d.animation.Animation3D;
+import org.rajawali3d.materials.plugins.IMaterialPlugin;
 
 import java.util.List;
 
@@ -9,6 +11,10 @@ import java.util.List;
  */
 
 public class Ornament {
+    private List<Object3D> object3DList;
+    private List<List<IMaterialPlugin>> materialList;
+    private float timeStep;
+
     private int modelResId;
     private int imgResId;
     private float scale;
@@ -23,6 +29,30 @@ public class Ornament {
     private int textureResId = -1;
     private String texturePath = null;
     private boolean isFaceMask;
+
+    public List<Object3D> getObject3DList() {
+        return object3DList;
+    }
+
+    public void setObject3DList(List<Object3D> mObject3DList) {
+        this.object3DList = mObject3DList;
+    }
+
+    public List<List<IMaterialPlugin>> getMaterialList() {
+        return materialList;
+    }
+
+    public void setMaterialList(List<List<IMaterialPlugin>> materialList) {
+        this.materialList = materialList;
+    }
+
+    public float getTimeStep() {
+        return timeStep;
+    }
+
+    public void setTimeStep(float timeStep) {
+        this.timeStep = timeStep;
+    }
 
     public int getModelResId() {
         return modelResId;

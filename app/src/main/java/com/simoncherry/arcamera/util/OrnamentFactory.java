@@ -4,6 +4,13 @@ import android.graphics.Color;
 
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.model.Ornament;
+import com.simoncherry.arcamera.rajawali.CustomMaterialPlugin;
+import com.simoncherry.arcamera.rajawali.CustomVertexShaderMaterialPlugin;
+
+import org.rajawali3d.Object3D;
+import org.rajawali3d.materials.plugins.IMaterialPlugin;
+import org.rajawali3d.primitives.NPrism;
+import org.rajawali3d.primitives.Sphere;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +37,7 @@ public class OrnamentFactory {
 //        ornaments.add(getGasMask());
 //        ornaments.add(getIronMan());
 //        ornaments.add(getRingHat());
+        ornaments.add(getLaserEye());
         return ornaments;
     }
 
@@ -187,6 +195,63 @@ public class OrnamentFactory {
 //        ornament.setColor(NO_COLOR);
 //        return ornament;
 //    }
+
+    private static Ornament getLaserEye() {
+        Ornament ornament = new Ornament();
+        List<Object3D> object3DList = new ArrayList<>();
+        List<List<IMaterialPlugin>> materialList = new ArrayList<>();
+
+        List<IMaterialPlugin> laserPlugins = new ArrayList<>();
+        laserPlugins.add(new CustomVertexShaderMaterialPlugin(0.35f));
+        laserPlugins.add(new CustomMaterialPlugin());
+
+        List<IMaterialPlugin> spherePlugins = new ArrayList<>();
+        spherePlugins.add(new CustomVertexShaderMaterialPlugin(0.15f));
+        spherePlugins.add(new CustomMaterialPlugin());
+
+        float radius = 0.05f;
+        float height = 2.0f;
+        float posX = 0.225f;
+        float posY = 0.175f;
+        float posZ = 1.35f;
+
+        // 左眼光柱
+        Object3D laserLeft = new NPrism(24, radius, radius, height);
+        laserLeft.setRotation(0, 0, -90);
+        laserLeft.setPosition(-posX, posY, posZ);
+
+        // 左眼光球
+        Object3D sphereLeft = new Sphere(radius * 1.2f, 60, 60);
+        sphereLeft.setPosition(-posX, posY, posZ + height - height * 0.4f);
+
+        // 右眼光柱
+        Object3D laserRight = new NPrism(24, radius, radius, height);
+        laserRight.setRotation(0, 0, -90);
+        laserRight.setPosition(posX, posY, posZ);
+
+        // 右眼光球
+        Object3D sphereRight = new Sphere(radius * 1.2f, 60, 60);
+        sphereRight.setPosition(posX, posY, posZ + height - height * 0.4f);
+
+        object3DList.add(laserLeft);
+        object3DList.add(sphereLeft);
+        object3DList.add(laserRight);
+        object3DList.add(sphereRight);
+
+        materialList.add(laserPlugins);
+        materialList.add(spherePlugins);
+        materialList.add(laserPlugins);
+        materialList.add(spherePlugins);
+
+        ornament.setObject3DList(object3DList);
+        ornament.setMaterialList(materialList);
+        ornament.setTimeStep(2.5f);
+
+        ornament.setImgResId(R.drawable.ic_laser);
+        ornament.setScale(1.0f);
+        ornament.setOffset(0, 0, 0);
+        return ornament;
+    }
 
 
     public static List<Ornament> getPresetMask() {

@@ -17,7 +17,7 @@
             android:layout_height="50dp"
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
-            android:text="主页面重构中；下面全是测试页面"/>
+            android:text="主页面"/>
 
         <Button
             android:id="@+id/btn_swap_face"
