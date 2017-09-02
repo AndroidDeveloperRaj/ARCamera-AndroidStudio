@@ -38,24 +38,23 @@ public class My3DRenderer extends Renderer {
     private final static String TAG = My3DRenderer.class.getSimpleName();
 
     private Object3D mContainer;
-    private Object3D mOrnament;
-    private Geometry3D mGeometry3D;
+    private List<Object3D> mObject3DList = new ArrayList<>();
 
     private Ornament mOrnamentModel;
     private boolean mIsNeedUpdateOrnament = false;
     private boolean mIsOrnamentVisible = true;
 
-    private boolean mIsFaceMask = false;
+    private int mModelType = Ornament.TYPE_NONE;
     // 用于静态3D模型
     private Vector3 mAccValues;
     private float mTransX = 0.0f;
     private float mTransY = 0.0f;
     private float mScale = 1.0f;
     // 用于动态3D模型
+    private List<Geometry3D> mGeometry3DList = new ArrayList<>();
     private List<DynamicPoint> mPoints = new ArrayList<>();
     private boolean mIsChanging = false;
     // 用于Rajawali内置模型
-    private List<Object3D> mObject3DList = new ArrayList<>();
     private List<Material> mMaterialList = new ArrayList<>();
     private float mMaterialTime = 0;
 
@@ -92,7 +91,7 @@ public class My3DRenderer extends Renderer {
 
     // 设置3D模型的平移
     public void setTransition(float x, float y, float z) {
-        if (!mIsFaceMask) {
+        if (mModelType == Ornament.TYPE_STATIC || mModelType == Ornament.TYPE_BUILT_IN) {
             mTransX = x;
             mTransY = y;
             setScale(z);
@@ -127,7 +126,7 @@ public class My3DRenderer extends Renderer {
             loadOrnament();
         }
 
-        if (!mIsFaceMask) {
+        if (mModelType == Ornament.TYPE_STATIC || mModelType == Ornament.TYPE_BUILT_IN) {
             Log.i(TAG, "静态模型");
             // 处理3D模型的旋转
             mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
@@ -150,19 +149,23 @@ public class My3DRenderer extends Renderer {
                 }
             }
 
-        } else {
+        } else if (mModelType == Ornament.TYPE_DYNAMIC) {
             Log.i(TAG, "动态模型");
             if (!mIsChanging && mPoints != null && mPoints.size() > 0) {
                 mIsChanging = true;
 
                 try {  // FIXME
-                    FloatBuffer vertBuffer = mGeometry3D.getVertices();
-                    for (int i=0; i<mPoints.size(); i++) {
-                        DynamicPoint point = mPoints.get(i);
-                        Log.i(TAG, "No." + i + ": " + point.toString());
-                        changePoint(vertBuffer, point.getIndex(), point.getX(), point.getY(), point.getZ());
+                    if (mGeometry3DList != null && mGeometry3DList.size() > 0) {
+                        for (Geometry3D geometry3D : mGeometry3DList) {
+                            FloatBuffer vertBuffer = geometry3D.getVertices();
+                            for (int i = 0; i < mPoints.size(); i++) {
+                                DynamicPoint point = mPoints.get(i);
+                                Log.i(TAG, "No." + i + ": " + point.toString());
+                                changePoint(vertBuffer, point.getIndex(), point.getX(), point.getY(), point.getZ());
+                            }
+                            geometry3D.changeBufferData(geometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
+                        }
                     }
-                    mGeometry3D.changeBufferData(mGeometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
 
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
@@ -182,11 +185,6 @@ public class My3DRenderer extends Renderer {
     }
 
     private void clearScene() {
-        if (mOrnament != null) {
-            mIsOrnamentVisible = mOrnament.isVisible();
-            mContainer.removeChild(mOrnament);
-        }
-
         if (mObject3DList != null && mObject3DList.size() > 0) {
             for (int i = 0; i < mObject3DList.size(); i++) {
                 Object3D object3D = mObject3DList.get(i);
@@ -201,6 +199,10 @@ public class My3DRenderer extends Renderer {
             mMaterialList.clear();
         }
 
+        if (mGeometry3DList != null && mGeometry3DList.size() > 0) {
+            mGeometry3DList.clear();
+        }
+
         mMaterialTime = 0;
     }
 
@@ -209,33 +211,16 @@ public class My3DRenderer extends Renderer {
             clearScene();
 
             if (mOrnamentModel != null) {
-                List<Object3D> object3DList = mOrnamentModel.getObject3DList();
-                List<List<IMaterialPlugin>> materialList = mOrnamentModel.getMaterialList();
-                mIsFaceMask = mOrnamentModel.isFaceMask();
-                int textureResId = mOrnamentModel.getTextureResId();
-                String texturePath = mOrnamentModel.getTexturePath();
-
-                if (object3DList != null && materialList != null) {
-                    mObject3DList.addAll(object3DList);
-
-                    for (List<IMaterialPlugin> pluginList : materialList) {
-                        Material material = new Material();
-                        material.enableTime(true);
-                        for (IMaterialPlugin plugin : pluginList) {
-                            material.addPlugin(plugin);
-                        }
-                        mMaterialList.add(material);
-                    }
-                    loadBuildInModel();
-                }
-
-                else if (texturePath != null) {
-                    loadDynamicModel(texturePath);
-                    initOrnamentParams();
-
-                } else {
-                    loadStaticModel(textureResId);
-                    initOrnamentParams();
+                mModelType = mOrnamentModel.getType();
+                switch (mModelType) {
+                    case Ornament.TYPE_BUILT_IN:
+                        loadBuildInModel();
+                        break;
+                    case Ornament.TYPE_STATIC:
+                    case Ornament.TYPE_DYNAMIC:
+                        loadExtraModel();
+                        initOrnamentParams();
+                        break;
                 }
             }
 
@@ -246,21 +231,36 @@ public class My3DRenderer extends Renderer {
 
     private void loadBuildInModel() {
         try {
-            if (mObject3DList != null && mObject3DList.size() > 0) {
-                for (int i = 0; i < mObject3DList.size(); i++) {
-                    Object3D object3D = mObject3DList.get(i);
-                    if (object3D != null) {
-                        Material material = mMaterialList.get(i);
-                        if (material != null) {
-                            object3D.setMaterial(material);
+            List<Object3D> object3DList = mOrnamentModel.getObject3DList();
+            List<List<IMaterialPlugin>> materialList = mOrnamentModel.getMaterialList();
+            if (object3DList != null && materialList != null) {
+                mObject3DList.addAll(object3DList);
+
+                for (List<IMaterialPlugin> pluginList : materialList) {
+                    Material material = new Material();
+                    material.enableTime(true);
+                    for (IMaterialPlugin plugin : pluginList) {
+                        material.addPlugin(plugin);
+                    }
+                    mMaterialList.add(material);
+                }
+
+                if (mObject3DList != null && mObject3DList.size() > 0) {
+                    for (int i = 0; i < mObject3DList.size(); i++) {
+                        Object3D object3D = mObject3DList.get(i);
+                        if (object3D != null) {
+                            Material material = mMaterialList.get(i);
+                            if (material != null) {
+                                object3D.setMaterial(material);
+                            }
+                            mContainer.addChild(object3D);
                         }
-                        mContainer.addChild(object3D);
                     }
-                }
 
-                mContainer.setScale(mOrnamentModel.getScale());
-                mContainer.setPosition(mOrnamentModel.getOffsetX(), mOrnamentModel.getOffsetY(), mOrnamentModel.getOffsetZ());
-                mContainer.setRotation(mOrnamentModel.getRotateX(), mOrnamentModel.getRotateY(), mOrnamentModel.getRotateZ());
+                    mContainer.setScale(mOrnamentModel.getScale());
+                    mContainer.setPosition(mOrnamentModel.getOffsetX(), mOrnamentModel.getOffsetY(), mOrnamentModel.getOffsetZ());
+                    mContainer.setRotation(mOrnamentModel.getRotateX(), mOrnamentModel.getRotateY(), mOrnamentModel.getRotateZ());
+                }
             }
 
         } catch (Exception e) {
@@ -268,28 +268,22 @@ public class My3DRenderer extends Renderer {
         }
     }
 
-    private void loadStaticModel(int textureResId) {
+    private void loadExtraModel() {
         try {
-            LoaderOBJ objParser1 = new LoaderOBJ(mContext.getResources(), mTextureManager, mOrnamentModel.getModelResId());
-            objParser1.parse();
-            mOrnament = objParser1.getParsedObject();
+            List<Ornament.Model> modelList = mOrnamentModel.getModelList();
+            if (modelList != null && modelList.size() > 0) {
+                for (Ornament.Model model : modelList) {
+                    String texturePath = model.getTexturePath();
 
-            if (mIsFaceMask) {
-                if (textureResId <= 0) {  // 如果没有有效的贴图资源Id
-                    mIsFaceMask = false;
-                } else {
-                    ATexture texture = mOrnament.getMaterial().getTextureList().get(0);
-                    mOrnament.getMaterial().removeTexture(texture);
-
-                    Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), textureResId);
-                    if (bitmap == null) {  // 如果无法生成的贴图Bitmap
-                        mIsFaceMask = false;
+                    Object3D object3D;
+                    if (texturePath != null) {
+                        object3D = loadDynamicModel(model);
                     } else {
-                        mIsChanging = true;
-                        // 调整肤色
-                        bitmap = changeSkinColor(bitmap, mSkinColor);
-                        mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
-                        mIsChanging = false;
+                        object3D = loadStaticModel(model);
+                    }
+
+                    if (object3D != null) {
+                        mObject3DList.add(object3D);
                     }
                 }
             }
@@ -299,45 +293,97 @@ public class My3DRenderer extends Renderer {
         }
     }
 
-    private void loadDynamicModel(String texturePath) {
+    private Object3D loadStaticModel(Ornament.Model model) {
+        try {
+            int modelResId = model.getModelResId();
+            LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(), mTextureManager, modelResId);
+            objParser.parse();
+            Object3D object3D = objParser.getParsedObject();
+
+            object3D.setScale(model.getScale());
+            object3D.setPosition(model.getOffsetX(), model.getOffsetY(), model.getOffsetZ());
+            object3D.setRotation(model.getRotateX(), model.getRotateY(), model.getRotateZ());
+
+            int textureResId = model.getTextureResId();
+            if (textureResId > 0) {
+                ATexture texture = object3D.getMaterial().getTextureList().get(0);
+                object3D.getMaterial().removeTexture(texture);
+
+                Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), textureResId);
+                if (bitmap != null) {
+                    mIsChanging = true;
+                    // 调整肤色
+                    bitmap = changeSkinColor(bitmap, mSkinColor);
+                    object3D.getMaterial().addTexture(new Texture("canvas", bitmap));
+                    mIsChanging = false;
+                }
+            }
+
+            int color = model.getColor();
+            if (color != OrnamentFactory.NO_COLOR) {
+                object3D.getMaterial().setColor(color);
+            }
+
+            return object3D;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private Object3D loadDynamicModel(Ornament.Model model) {
         try {
             String objDir = "OpenGLDemo/txt/";
             String objName = "base_face_uv3_obj";
             LoaderOBJ parser = new LoaderOBJ(this, objDir + objName);
             parser.parse();
-            mOrnament = parser.getParsedObject();
-            ATexture texture = mOrnament.getMaterial().getTextureList().get(0);
-            mOrnament.getMaterial().removeTexture(texture);
+            Object3D object3D = parser.getParsedObject();
 
+            object3D.setScale(model.getScale());
+            object3D.setPosition(model.getOffsetX(), model.getOffsetY(), model.getOffsetZ());
+            object3D.setRotation(model.getRotateX(), model.getRotateY(), model.getRotateZ());
+
+            ATexture texture = object3D.getMaterial().getTextureList().get(0);
+            object3D.getMaterial().removeTexture(texture);
+
+            String texturePath = model.getTexturePath();
             Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFilePath(texturePath, 300, 300);
             // 调整肤色
             bitmap = changeSkinColor(bitmap, mSkinColor);
-            mOrnament.getMaterial().addTexture(new Texture("canvas", bitmap));
-            mOrnament.getMaterial().enableLighting(false);
+            object3D.getMaterial().addTexture(new Texture("canvas", bitmap));
+            object3D.getMaterial().enableLighting(false);
+
+            int color = model.getColor();
+            if (color != OrnamentFactory.NO_COLOR) {
+                object3D.getMaterial().setColor(color);
+            }
+
+            return object3D;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
     private void initOrnamentParams() {
-        mOrnament.setScale(mOrnamentModel.getScale());
-        mOrnament.setPosition(mOrnamentModel.getOffsetX(), mOrnamentModel.getOffsetY(), mOrnamentModel.getOffsetZ());
-        mOrnament.setRotation(mOrnamentModel.getRotateX(), mOrnamentModel.getRotateY(), mOrnamentModel.getRotateZ());
-        int color = mOrnamentModel.getColor();
-        if (color != OrnamentFactory.NO_COLOR) {
-            mOrnament.getMaterial().setColor(color);
+        if (mObject3DList != null && mObject3DList.size() > 0) {
+            for (Object3D object3D : mObject3DList) {
+                mContainer.addChild(object3D);
+
+                Geometry3D geometry3D = object3D.getGeometry();
+                mGeometry3DList.add(geometry3D);
+            }
         }
-        mGeometry3D = mOrnament.getGeometry();
 
         mContainer.setScale(1.0f);
         mContainer.setRotation(0, 0, 0);
         mContainer.setPosition(0, 0, 0);
         getCurrentCamera().setX(0);
         getCurrentCamera().setY(0);
-
-        mOrnament.setVisible(mIsOrnamentVisible);
-        mContainer.addChild(mOrnament);
     }
 
     private int faceIndices[][]={

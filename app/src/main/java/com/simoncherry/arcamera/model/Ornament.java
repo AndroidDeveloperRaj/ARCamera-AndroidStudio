@@ -11,12 +11,18 @@ import java.util.List;
  */
 
 public class Ornament {
+
+    public static final int TYPE_NONE = -1;
+    public static final int TYPE_STATIC = 0;
+    public static final int TYPE_DYNAMIC = 1;
+    public static final int TYPE_BUILT_IN = 2;
+
+    private int type = TYPE_NONE;
+    private int imgResId;
+    private List<Model> modelList;
     private List<Object3D> object3DList;
     private List<List<IMaterialPlugin>> materialList;
     private float timeStep;
-
-    private int modelResId;
-    private int imgResId;
     private float scale;
     private float offsetX;
     private float offsetY;
@@ -24,11 +30,31 @@ public class Ornament {
     private float rotateX;
     private float rotateY;
     private float rotateZ;
-    private int color;
-    private List<Animation3D> animation3Ds;
-    private int textureResId = -1;
-    private String texturePath = null;
-    private boolean isFaceMask;
+
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public int getImgResId() {
+        return imgResId;
+    }
+
+    public void setImgResId(int imgResId) {
+        this.imgResId = imgResId;
+    }
+
+    public List<Model> getModelList() {
+        return modelList;
+    }
+
+    public void setModelList(List<Model> modelList) {
+        this.modelList = modelList;
+    }
 
     public List<Object3D> getObject3DList() {
         return object3DList;
@@ -52,22 +78,6 @@ public class Ornament {
 
     public void setTimeStep(float timeStep) {
         this.timeStep = timeStep;
-    }
-
-    public int getModelResId() {
-        return modelResId;
-    }
-
-    public void setModelResId(int modelResId) {
-        this.modelResId = modelResId;
-    }
-
-    public int getImgResId() {
-        return imgResId;
-    }
-
-    public void setImgResId(int imgResId) {
-        this.imgResId = imgResId;
     }
 
     public float getScale() {
@@ -126,55 +136,135 @@ public class Ornament {
         this.rotateZ = rotateZ;
     }
 
-    public int getColor() {
-        return color;
-    }
+    public static class Model {
+        private int modelResId;
+        private float scale;
+        private float offsetX;
+        private float offsetY;
+        private float offsetZ;
+        private float rotateX;
+        private float rotateY;
+        private float rotateZ;
+        private int color;
+        private List<Animation3D> animation3Ds;
+        private int textureResId = -1;
+        private String texturePath = null;
+        private boolean isDynamic;
 
-    public void setColor(int color) {
-        this.color = color;
-    }
+        public int getModelResId() {
+            return modelResId;
+        }
 
-    public List<Animation3D> getAnimation3Ds() {
-        return animation3Ds;
-    }
+        public void setModelResId(int modelResId) {
+            this.modelResId = modelResId;
+        }
 
-    public void setAnimation3Ds(List<Animation3D> animation3Ds) {
-        this.animation3Ds = animation3Ds;
-    }
+        public float getScale() {
+            return scale;
+        }
 
-    public int getTextureResId() {
-        return textureResId;
-    }
+        public void setScale(float scale) {
+            this.scale = scale;
+        }
 
-    public void setTextureResId(int textureResId) {
-        this.textureResId = textureResId;
-    }
+        public float getOffsetX() {
+            return offsetX;
+        }
 
-    public String getTexturePath() {
-        return texturePath;
-    }
+        public void setOffsetX(float offsetX) {
+            this.offsetX = offsetX;
+        }
 
-    public void setTexturePath(String texturePath) {
-        this.texturePath = texturePath;
-    }
+        public float getOffsetY() {
+            return offsetY;
+        }
 
-    public boolean isFaceMask() {
-        return isFaceMask;
-    }
+        public void setOffsetY(float offsetY) {
+            this.offsetY = offsetY;
+        }
 
-    public void setFaceMask(boolean faceMask) {
-        isFaceMask = faceMask;
-    }
+        public float getOffsetZ() {
+            return offsetZ;
+        }
 
-    public void setOffset(float x, float y, float z) {
-        setOffsetX(x);
-        setOffsetY(y);
-        setOffsetZ(z);
-    }
+        public void setOffsetZ(float offsetZ) {
+            this.offsetZ = offsetZ;
+        }
 
-    public void setRotate(float x, float y, float z) {
-        setRotateX(x);
-        setRotateY(y);
-        setRotateZ(z);
+        public float getRotateX() {
+            return rotateX;
+        }
+
+        public void setRotateX(float rotateX) {
+            this.rotateX = rotateX;
+        }
+
+        public float getRotateY() {
+            return rotateY;
+        }
+
+        public void setRotateY(float rotateY) {
+            this.rotateY = rotateY;
+        }
+
+        public float getRotateZ() {
+            return rotateZ;
+        }
+
+        public void setRotateZ(float rotateZ) {
+            this.rotateZ = rotateZ;
+        }
+
+        public int getColor() {
+            return color;
+        }
+
+        public void setColor(int color) {
+            this.color = color;
+        }
+
+        public List<Animation3D> getAnimation3Ds() {
+            return animation3Ds;
+        }
+
+        public void setAnimation3Ds(List<Animation3D> animation3Ds) {
+            this.animation3Ds = animation3Ds;
+        }
+
+        public int getTextureResId() {
+            return textureResId;
+        }
+
+        public void setTextureResId(int textureResId) {
+            this.textureResId = textureResId;
+        }
+
+        public String getTexturePath() {
+            return texturePath;
+        }
+
+        public void setTexturePath(String texturePath) {
+            this.texturePath = texturePath;
+        }
+
+        public boolean isDynamic() {
+            return isDynamic;
+        }
+
+        public void setDynamic(boolean isDynamic) {
+            this.isDynamic = isDynamic;
+        }
+
+        public void setOffset(float x, float y, float z) {
+            setOffsetX(x);
+            setOffsetY(y);
+            setOffsetZ(z);
+        }
+
+        public void setRotate(float x, float y, float z) {
+            setRotateX(x);
+            setRotateY(y);
+            setRotateZ(z);
+        }
     }
 }
