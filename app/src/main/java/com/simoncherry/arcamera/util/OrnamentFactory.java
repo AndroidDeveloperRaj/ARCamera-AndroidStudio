@@ -162,6 +162,12 @@ public class OrnamentFactory {
         modelList.add(rightHand);
         ornament.setModelList(modelList);
 
+        ornament.setHasShaderPlane(true);
+        ornament.setVertResId(R.raw.flash_out_vert_shader);
+        ornament.setFragResId(R.raw.flash_out_frag_shader);
+        ornament.setTimeStep(0.01f);
+        ornament.setPlaneOffsetZ(0.6f);
+
         return ornament;
     }
 

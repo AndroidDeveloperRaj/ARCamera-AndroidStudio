@@ -205,8 +205,10 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         // 将Rajawali的SurfaceView的尺寸设为录像的尺寸
         ((org.rajawali3d.view.SurfaceView) mRenderSurface).getHolder().setFixedSize(VIDEO_WIDTH, VIDEO_HEIGHT);
         mISurfaceRenderer = new My3DRenderer(this);
+        ((My3DRenderer) mISurfaceRenderer).setScreenW(IMAGE_WIDTH);
+        ((My3DRenderer) mISurfaceRenderer).setScreenH(IMAGE_HEIGHT);
         mRenderSurface.setSurfaceRenderer(mISurfaceRenderer);
-        ((View) mRenderSurface).bringToFront();
+//        ((View) mRenderSurface).bringToFront();
 
         // 拍照时，先取Rajawali的帧数据，转成Bitmap待用；再取相机预览的帧数据，最后合成
         ((org.rajawali3d.view.SurfaceView) mRenderSurface).setOnTakeScreenshotListener(new org.rajawali3d.view.SurfaceView.OnTakeScreenshotListener() {

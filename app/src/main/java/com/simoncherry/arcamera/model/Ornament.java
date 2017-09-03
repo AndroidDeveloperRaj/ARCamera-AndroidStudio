@@ -31,6 +31,13 @@ public class Ornament {
     private float rotateY;
     private float rotateZ;
 
+    private boolean hasShaderPlane;
+    private int vertResId;
+    private int fragResId;
+    private float planeOffsetX;
+    private float planeOffsetY;
+    private float planeOffsetZ;
+
 
     public int getType() {
         return type;
@@ -136,6 +143,54 @@ public class Ornament {
         this.rotateZ = rotateZ;
     }
 
+    public boolean isHasShaderPlane() {
+        return hasShaderPlane;
+    }
+
+    public void setHasShaderPlane(boolean hasShaderPlane) {
+        this.hasShaderPlane = hasShaderPlane;
+    }
+
+    public int getVertResId() {
+        return vertResId;
+    }
+
+    public void setVertResId(int vertResId) {
+        this.vertResId = vertResId;
+    }
+
+    public int getFragResId() {
+        return fragResId;
+    }
+
+    public void setFragResId(int fragResId) {
+        this.fragResId = fragResId;
+    }
+
+    public float getPlaneOffsetX() {
+        return planeOffsetX;
+    }
+
+    public void setPlaneOffsetX(float planeOffsetX) {
+        this.planeOffsetX = planeOffsetX;
+    }
+
+    public float getPlaneOffsetY() {
+        return planeOffsetY;
+    }
+
+    public void setPlaneOffsetY(float planeOffsetY) {
+        this.planeOffsetY = planeOffsetY;
+    }
+
+    public float getPlaneOffsetZ() {
+        return planeOffsetZ;
+    }
+
+    public void setPlaneOffsetZ(float planeOffsetZ) {
+        this.planeOffsetZ = planeOffsetZ;
+    }
+
     public static class Model {
         private int modelResId;
         private float scale;
@@ -150,6 +205,7 @@ public class Ornament {
         private int textureResId = -1;
         private String texturePath = null;
         private boolean isDynamic;
+        private String name;
 
         public int getModelResId() {
             return modelResId;
@@ -253,6 +309,14 @@ public class Ornament {
 
         public void setDynamic(boolean isDynamic) {
             this.isDynamic = isDynamic;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public void setOffset(float x, float y, float z) {

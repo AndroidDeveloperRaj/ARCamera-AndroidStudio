@@ -13,6 +13,8 @@ import android.view.MotionEvent;
 
 import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Ornament;
+import com.simoncherry.arcamera.rajawali.MyFragmentShader;
+import com.simoncherry.arcamera.rajawali.MyVertexShader;
 import com.simoncherry.arcamera.util.BitmapUtils;
 import com.simoncherry.arcamera.util.OrnamentFactory;
 
@@ -24,6 +26,7 @@ import org.rajawali3d.materials.plugins.IMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
+import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.renderer.Renderer;
 
 import java.nio.FloatBuffer;
@@ -39,10 +42,15 @@ public class My3DRenderer extends Renderer {
 
     private Object3D mContainer;
     private List<Object3D> mObject3DList = new ArrayList<>();
+    private Object3D mShaderPlane;
+    private Material mCustomMaterial;
+    private MyFragmentShader mMyFragmentShader;
 
     private Ornament mOrnamentModel;
     private boolean mIsNeedUpdateOrnament = false;
     private boolean mIsOrnamentVisible = true;
+    private int mScreenW = 1;
+    private int mScreenH = 1;
 
     private int mModelType = Ornament.TYPE_NONE;
     // 用于静态3D模型
@@ -103,6 +111,14 @@ public class My3DRenderer extends Renderer {
         mScale = scale;
     }
 
+    public void setScreenW(int width) {
+        mScreenW = width;
+    }
+
+    public void setScreenH(int height) {
+        mScreenH = height;
+    }
+
     @Override
     protected void initScene() {
         try {
@@ -127,7 +143,6 @@ public class My3DRenderer extends Renderer {
         }
 
         if (mModelType == Ornament.TYPE_STATIC || mModelType == Ornament.TYPE_BUILT_IN) {
-            Log.i(TAG, "静态模型");
             // 处理3D模型的旋转
             mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
             // 处理3D模型的缩放
@@ -150,7 +165,6 @@ public class My3DRenderer extends Renderer {
             }
 
         } else if (mModelType == Ornament.TYPE_DYNAMIC) {
-            Log.i(TAG, "动态模型");
             if (!mIsChanging && mPoints != null && mPoints.size() > 0) {
                 mIsChanging = true;
 
@@ -160,7 +174,6 @@ public class My3DRenderer extends Renderer {
                             FloatBuffer vertBuffer = geometry3D.getVertices();
                             for (int i = 0; i < mPoints.size(); i++) {
                                 DynamicPoint point = mPoints.get(i);
-                                Log.i(TAG, "No." + i + ": " + point.toString());
                                 changePoint(vertBuffer, point.getIndex(), point.getX(), point.getY(), point.getZ());
                             }
                             geometry3D.changeBufferData(geometry3D.getVertexBufferInfo(), vertBuffer, 0, vertBuffer.limit());
@@ -172,6 +185,27 @@ public class My3DRenderer extends Renderer {
                 }
 
                 mIsChanging = false;
+            }
+        }
+
+        // TODO
+        if (mShaderPlane != null && mOrnamentModel != null && mMyFragmentShader != null && mCustomMaterial != null) {
+            mMyFragmentShader.setScreenW(mScreenW);
+            mMyFragmentShader.setScreenH(mScreenH);
+
+            if (mMaterialTime == 0) {
+                mMyFragmentShader.setFlag(1);
+            }
+
+            mMaterialTime += mOrnamentModel.getTimeStep();
+            mCustomMaterial.setTime(mMaterialTime);
+
+            if (mMaterialTime > 0.125f) {
+                mMyFragmentShader.setFlag(0);
+            }
+
+            if (mMaterialTime > 1) {
+                mMaterialTime = 0;
             }
         }
     }
@@ -203,6 +237,11 @@ public class My3DRenderer extends Renderer {
             mGeometry3DList.clear();
         }
 
+        if (mShaderPlane != null) {
+            mContainer.removeChild(mShaderPlane);
+            mShaderPlane = null;
+        }
+
         mMaterialTime = 0;
     }
 
@@ -221,6 +260,11 @@ public class My3DRenderer extends Renderer {
                         loadExtraModel();
                         initOrnamentParams();
                         break;
+                }
+
+                boolean isHasShaderPlane = mOrnamentModel.isHasShaderPlane();
+                if (isHasShaderPlane) {
+                    loadShaderPlane();
                 }
             }
 
@@ -300,6 +344,8 @@ public class My3DRenderer extends Renderer {
             objParser.parse();
             Object3D object3D = objParser.getParsedObject();
 
+            String name = model.getName();
+            object3D.setName(name == null ? "" : name);
             object3D.setScale(model.getScale());
             object3D.setPosition(model.getOffsetX(), model.getOffsetY(), model.getOffsetZ());
             object3D.setRotation(model.getRotateX(), model.getRotateY(), model.getRotateZ());
@@ -379,11 +425,34 @@ public class My3DRenderer extends Renderer {
             }
         }
 
+        mContainer.setTransparent(false);
         mContainer.setScale(1.0f);
         mContainer.setRotation(0, 0, 0);
         mContainer.setPosition(0, 0, 0);
         getCurrentCamera().setX(0);
         getCurrentCamera().setY(0);
+    }
+
+    private void loadShaderPlane() {
+        int vertResId = mOrnamentModel.getVertResId();
+        int fragResId = mOrnamentModel.getFragResId();
+        if (vertResId > 0 && fragResId > 0) {
+            mMyFragmentShader = new MyFragmentShader(fragResId);
+
+            mCustomMaterial = new Material(
+                    new MyVertexShader(vertResId),
+                    mMyFragmentShader);
+            mCustomMaterial.enableTime(true);
+
+            float offsetX = mOrnamentModel.getPlaneOffsetX();
+            float offsetY = mOrnamentModel.getPlaneOffsetY();
+            float offsetZ = mOrnamentModel.getPlaneOffsetZ();
+            mShaderPlane = new Plane(5, 5, 1, 1);
+            mShaderPlane.setPosition(offsetX, offsetY, offsetZ);
+            mShaderPlane.setMaterial(mCustomMaterial);
+            mShaderPlane.setTransparent(true);
+            mContainer.addChild(mShaderPlane);
+        }
     }
 
     private int faceIndices[][]={
