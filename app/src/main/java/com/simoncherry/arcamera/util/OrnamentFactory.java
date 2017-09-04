@@ -174,14 +174,15 @@ public class OrnamentFactory {
 
     public static List<Ornament> getPresetMask() {
         List<Ornament> ornaments = new ArrayList<>();
-        ornaments.add(getMask(R.drawable.average_male, R.drawable.mask_man));
-        ornaments.add(getMask(R.drawable.average_female, R.drawable.mask_woman));
-        ornaments.add(getMask(R.drawable.lion_texture, R.drawable.mask_lion));
-        ornaments.add(getMask(R.drawable.skull_texture, R.drawable.mask_skull));
+        ornaments.add(getMask(R.drawable.average_male, R.drawable.mask_man, true));
+        ornaments.add(getMask(R.drawable.average_female, R.drawable.mask_woman, true));
+        ornaments.add(getMask(R.drawable.female_virtual_makeup, R.drawable.mask_makeup, false));
+        ornaments.add(getMask(R.drawable.lion_texture, R.drawable.mask_lion, false));
+        ornaments.add(getMask(R.drawable.skull_texture, R.drawable.mask_skull, false));
         return ornaments;
     }
 
-    private static Ornament getMask(int textureResId, int imgResId) {
+    private static Ornament getMask(int textureResId, int imgResId, boolean needSkinColor) {
         Ornament ornament = new Ornament();
 
         Ornament.Model model = new Ornament.Model();
@@ -191,6 +192,7 @@ public class OrnamentFactory {
         model.setOffset(0, 0, 0);
         model.setRotate(0, 0, 0);
         model.setColor(NO_COLOR);
+        model.setNeedSkinColor(needSkinColor);
 
         ornament.setType(Ornament.TYPE_DYNAMIC);
         ornament.setImgResId(imgResId);
@@ -210,6 +212,7 @@ public class OrnamentFactory {
         model.setOffset(0, 0, 0);
         model.setRotate(0, 0, 0);
         model.setColor(NO_COLOR);
+        model.setNeedSkinColor(true);
 
         ornament.setType(Ornament.TYPE_DYNAMIC);
         ornament.setImgResId(0);

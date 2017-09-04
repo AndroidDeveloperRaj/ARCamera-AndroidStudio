@@ -359,7 +359,9 @@ public class My3DRenderer extends Renderer {
                 if (bitmap != null) {
                     mIsChanging = true;
                     // 调整肤色
-                    bitmap = changeSkinColor(bitmap, mSkinColor);
+                    if (model.isNeedSkinColor()) {
+                        bitmap = changeSkinColor(bitmap, mSkinColor);
+                    }
                     object3D.getMaterial().addTexture(new Texture("canvas", bitmap));
                     mIsChanging = false;
                 }
@@ -397,7 +399,9 @@ public class My3DRenderer extends Renderer {
             String texturePath = model.getTexturePath();
             Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFilePath(texturePath, 300, 300);
             // 调整肤色
-            bitmap = changeSkinColor(bitmap, mSkinColor);
+            if (model.isNeedSkinColor()) {
+                bitmap = changeSkinColor(bitmap, mSkinColor);
+            }
             object3D.getMaterial().addTexture(new Texture("canvas", bitmap));
             object3D.getMaterial().enableLighting(false);
 

@@ -205,6 +205,7 @@ public class Ornament {
         private int textureResId = -1;
         private String texturePath = null;
         private boolean isDynamic;
+        private boolean needSkinColor;
         private String name;
 
         public int getModelResId() {
@@ -309,6 +310,14 @@ public class Ornament {
 
         public void setDynamic(boolean isDynamic) {
             this.isDynamic = isDynamic;
+        }
+
+        public boolean isNeedSkinColor() {
+            return needSkinColor;
+        }
+
+        public void setNeedSkinColor(boolean needSkinColor) {
+            this.needSkinColor = needSkinColor;
         }
 
         public String getName() {
