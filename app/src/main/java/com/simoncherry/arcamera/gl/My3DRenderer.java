@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -28,6 +29,8 @@ import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.renderer.Renderer;
+import org.rajawali3d.util.ObjectColorPicker;
+import org.rajawali3d.util.OnObjectPickedListener;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -37,11 +40,12 @@ import java.util.List;
  * Created by Simon on 2017/7/19.
  */
 
-public class My3DRenderer extends Renderer {
+public class My3DRenderer extends Renderer implements OnObjectPickedListener {
     private final static String TAG = My3DRenderer.class.getSimpleName();
 
     private Object3D mContainer;
     private List<Object3D> mObject3DList = new ArrayList<>();
+    private Object3D mPickedObject;
     private Object3D mShaderPlane;
     private Material mCustomMaterial;
     private MyFragmentShader mMyFragmentShader;
@@ -65,6 +69,7 @@ public class My3DRenderer extends Renderer {
     // 用于Rajawali内置模型
     private List<Material> mMaterialList = new ArrayList<>();
     private float mMaterialTime = 0;
+    private ObjectColorPicker mPicker;
 
     // 根据肤色更改模型贴图的颜色
     private int mSkinColor = 0xffd4c9b5;
@@ -208,6 +213,28 @@ public class My3DRenderer extends Renderer {
                 mMaterialTime = 0;
             }
         }
+
+        if (mPickedObject != null && mOrnamentModel != null && mObject3DList != null && mObject3DList.size() > 0) {
+            int index = mObject3DList.indexOf(mPickedObject);
+            if (index >= 0) {
+                List<Ornament.Model> modelList = mOrnamentModel.getModelList();
+                if (modelList != null && modelList.size() > index) {
+                    Ornament.Model model = modelList.get(index);
+                    if (model != null && model.isNeedObjectPick()) {
+                        boolean isPicked = model.isPicked();
+                        if (isPicked) {
+                            mPickedObject.setPosition(model.getAfterX(), model.getAfterY(), model.getAfterZ());
+                            mPickedObject.setRotation(model.getAxisX(), model.getAxisY(), model.getAxisZ(),
+                                    model.getAfterAngle());
+                        } else {
+                            mPickedObject.setPosition(model.getBeforeX(), model.getBeforeY(), model.getBeforeZ());
+                            mPickedObject.setRotation(model.getAxisX(), model.getAxisY(), model.getAxisZ(),
+                                    model.getBeforeAngle());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -218,16 +245,51 @@ public class My3DRenderer extends Renderer {
     public void onTouchEvent(MotionEvent event) {
     }
 
+    @Override
+    public void onObjectPicked(@NonNull Object3D object) {
+        // TODO -- 检测有问题，index总是返回0
+        Log.i(TAG, "onObjectPicked: " + object.getName());
+        mPickedObject = object;
+        if (mOrnamentModel != null && mObject3DList != null && mObject3DList.size() > 0) {
+            int index = mObject3DList.indexOf(object);
+            if (index >= 0) {
+                List<Ornament.Model> modelList = mOrnamentModel.getModelList();
+                if (modelList != null && modelList.size() > index) {
+                    Ornament.Model model = modelList.get(index);
+                    if (model != null && model.isNeedObjectPick()) {
+                        boolean isPicked = model.isPicked();
+                        isPicked = !isPicked;
+                        model.setPicked(isPicked);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onNoObjectPicked() {
+    }
+
     private void clearScene() {
         if (mObject3DList != null && mObject3DList.size() > 0) {
             for (int i = 0; i < mObject3DList.size(); i++) {
                 Object3D object3D = mObject3DList.get(i);
                 if (object3D != null) {
+                    if (mPicker != null) {
+                        mPicker.unregisterObject(object3D);
+                    }
                     mContainer.removeChild(object3D);
+                    object3D.destroy();
                 }
             }
             mObject3DList.clear();
         }
+
+        if (mPicker != null) {
+            mPicker = null;
+        }
+
+        mPickedObject = null;
 
         if (mMaterialList != null && mMaterialList.size() > 0) {
             mMaterialList.clear();
@@ -370,6 +432,14 @@ public class My3DRenderer extends Renderer {
             int color = model.getColor();
             if (color != OrnamentFactory.NO_COLOR) {
                 object3D.getMaterial().setColor(color);
+            }
+
+            if (model.isNeedObjectPick()) {
+                if (mPicker == null) {
+                    mPicker = new ObjectColorPicker(this);
+                    mPicker.setOnObjectPickedListener(this);
+                }
+                mPicker.registerObject(object3D);
             }
 
             return object3D;
@@ -586,5 +656,11 @@ public class My3DRenderer extends Renderer {
     // 混合模式 -- 叠加
     private int overlay(int A, int B) {
         return ((B < 128) ? (2 * A * B / 255) : (255 - 2 * (255 - A) * (255 - B) / 255));
+    }
+
+    public void getObjectAt(float x, float y) {
+        if (mPicker != null) {
+            mPicker.getObjectAt(x, y);
+        }
     }
 }

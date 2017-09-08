@@ -208,7 +208,15 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         ((My3DRenderer) mISurfaceRenderer).setScreenW(IMAGE_WIDTH);
         ((My3DRenderer) mISurfaceRenderer).setScreenH(IMAGE_HEIGHT);
         mRenderSurface.setSurfaceRenderer(mISurfaceRenderer);
-//        ((View) mRenderSurface).bringToFront();
+        ((org.rajawali3d.view.SurfaceView) mRenderSurface).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    ((My3DRenderer) mISurfaceRenderer).getObjectAt(event.getX(), event.getY());
+                }
+                return onTouchEvent(event);
+            }
+        });
 
         // 拍照时，先取Rajawali的帧数据，转成Bitmap待用；再取相机预览的帧数据，最后合成
         ((org.rajawali3d.view.SurfaceView) mRenderSurface).setOnTakeScreenshotListener(new org.rajawali3d.view.SurfaceView.OnTakeScreenshotListener() {

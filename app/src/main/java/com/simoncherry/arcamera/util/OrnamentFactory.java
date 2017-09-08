@@ -29,6 +29,7 @@ public class OrnamentFactory {
         ornaments.add(getVMask());
         ornaments.add(getLaserEye());
         ornaments.add(getCamera());
+        ornaments.add(getIronMan());
         return ornaments;
     }
 
@@ -167,6 +168,40 @@ public class OrnamentFactory {
         ornament.setFragResId(R.raw.flash_out_frag_shader);
         ornament.setTimeStep(0.01f);
         ornament.setPlaneOffsetZ(0.6f);
+
+        return ornament;
+    }
+
+    public static Ornament getIronMan() {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model ironManTop = new Ornament.Model();
+        ironManTop.setName("ironManTop");
+        ironManTop.setModelResId(R.raw.iron_man_helmet_top_obj);
+        ironManTop.setScale(0.75f);
+        ironManTop.setOffset(0, -0.5f, 0);
+        // for object pick
+        ironManTop.setNeedObjectPick(true);
+        ironManTop.setBeforeY(-0.5f);
+        ironManTop.setAfterY(-0.15f);
+        ironManTop.setBeforeZ(0);
+        ironManTop.setAfterZ(0.5f);
+        ironManTop.setAxisX(1);
+        ironManTop.setBeforeAngle(0);
+        ironManTop.setAfterAngle(40);
+
+        Ornament.Model ironManBottom = new Ornament.Model();
+        ironManBottom.setName("ironManBottom");
+        ironManBottom.setModelResId(R.raw.iron_man_helmet_bottom_obj);
+        ironManBottom.setScale(0.75f);
+        ironManBottom.setOffset(0, -0.5f, 0);
+
+        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_iron_man);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(ironManTop);
+        modelList.add(ironManBottom);
+        ornament.setModelList(modelList);
 
         return ornament;
     }

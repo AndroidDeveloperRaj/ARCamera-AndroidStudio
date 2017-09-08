@@ -192,6 +192,7 @@ public class Ornament {
     }
 
     public static class Model {
+        private String name;
         private int modelResId;
         private float scale;
         private float offsetX;
@@ -206,7 +207,28 @@ public class Ornament {
         private String texturePath = null;
         private boolean isDynamic;
         private boolean needSkinColor;
-        private String name;
+        private boolean needObjectPick;
+        // for object pick
+        private boolean isPicked;
+        private float beforeX;
+        private float beforeY;
+        private float beforeZ;
+        private float afterX;
+        private float afterY;
+        private float afterZ;
+        private float beforeAngle;
+        private float afterAngle;
+        private int axisX;
+        private int axisY;
+        private int axisZ;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
 
         public int getModelResId() {
             return modelResId;
@@ -320,12 +342,12 @@ public class Ornament {
             this.needSkinColor = needSkinColor;
         }
 
-        public String getName() {
-            return name;
+        public boolean isNeedObjectPick() {
+            return needObjectPick;
         }
 
-        public void setName(String name) {
-            this.name = name;
+        public void setNeedObjectPick(boolean needObjectPick) {
+            this.needObjectPick = needObjectPick;
         }
 
         public void setOffset(float x, float y, float z) {
@@ -338,6 +360,102 @@ public class Ornament {
             setRotateX(x);
             setRotateY(y);
             setRotateZ(z);
+        }
+
+        public boolean isPicked() {
+            return isPicked;
+        }
+
+        public void setPicked(boolean picked) {
+            isPicked = picked;
+        }
+
+        public float getBeforeX() {
+            return beforeX;
+        }
+
+        public void setBeforeX(float beforeX) {
+            this.beforeX = beforeX;
+        }
+
+        public float getBeforeY() {
+            return beforeY;
+        }
+
+        public void setBeforeY(float beforeY) {
+            this.beforeY = beforeY;
+        }
+
+        public float getBeforeZ() {
+            return beforeZ;
+        }
+
+        public void setBeforeZ(float beforeZ) {
+            this.beforeZ = beforeZ;
+        }
+
+        public float getAfterX() {
+            return afterX;
+        }
+
+        public void setAfterX(float afterX) {
+            this.afterX = afterX;
+        }
+
+        public float getAfterY() {
+            return afterY;
+        }
+
+        public void setAfterY(float afterY) {
+            this.afterY = afterY;
+        }
+
+        public float getAfterZ() {
+            return afterZ;
+        }
+
+        public void setAfterZ(float afterZ) {
+            this.afterZ = afterZ;
+        }
+
+        public float getBeforeAngle() {
+            return beforeAngle;
+        }
+
+        public void setBeforeAngle(float beforeAngle) {
+            this.beforeAngle = beforeAngle;
+        }
+
+        public float getAfterAngle() {
+            return afterAngle;
+        }
+
+        public void setAfterAngle(float afterAngle) {
+            this.afterAngle = afterAngle;
+        }
+
+        public int getAxisX() {
+            return axisX;
+        }
+
+        public void setAxisX(int axisX) {
+            this.axisX = axisX;
+        }
+
+        public int getAxisY() {
+            return axisY;
+        }
+
+        public void setAxisY(int axisY) {
+            this.axisY = axisY;
+        }
+
+        public int getAxisZ() {
+            return axisZ;
+        }
+
+        public void setAxisZ(int axisZ) {
+            this.axisZ = axisZ;
         }
     }
 }
