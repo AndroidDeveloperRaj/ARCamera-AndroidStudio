@@ -20,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -151,6 +152,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private boolean mIsNeedSkinColor = false;
     private PointF mSamplePoint = null;
 
+    private int mSurfaceWidth;
+    private int mSurfaceHeight;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,7 +216,11 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    ((My3DRenderer) mISurfaceRenderer).getObjectAt(event.getX(), event.getY());
+                    float scaleW = VIDEO_WIDTH / (float) mSurfaceWidth;
+                    float scaleH = VIDEO_HEIGHT / (float) mSurfaceHeight;
+                    float touchX = event.getX() * scaleW;
+                    float touchY = event.getY() * scaleH;
+                    ((My3DRenderer) mISurfaceRenderer).getObjectAt(touchX, touchY);
                 }
                 return onTouchEvent(event);
             }
@@ -233,6 +241,17 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             public void onTakeScreenshot(int[] pixels) {
                 Log.e(TAG, "onTakeScreenshot(byte[] pixels)");
                 mRajawaliPixels = pixels;
+            }
+        });
+
+        ((org.rajawali3d.view.SurfaceView) mRenderSurface).getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                ((org.rajawali3d.view.SurfaceView) mRenderSurface).getViewTreeObserver()
+                        .removeOnGlobalLayoutListener(this);
+                mSurfaceWidth = ((org.rajawali3d.view.SurfaceView) mRenderSurface).getWidth();
+                mSurfaceHeight = ((org.rajawali3d.view.SurfaceView) mRenderSurface).getHeight();
             }
         });
     }
@@ -346,9 +365,19 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 if (position == 0) ornament = null;
                 ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
                 ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
-                // 获取人脸中心点的颜色
-                mIsNeedSkinColor = true;
-                mController.takePhoto();
+                if (ornament != null) {
+                    List<Ornament.Model> modelList = ornament.getModelList();
+                    if (modelList != null && modelList.size() > 0) {
+                        for (Ornament.Model model : modelList) {
+                            if (model != null && model.isNeedSkinColor()) {
+                                // 获取人脸中心点的颜色
+                                mIsNeedSkinColor = true;
+                                mController.takePhoto();
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         });
 
@@ -624,6 +653,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
             if (mSamplePoint != null) {
                 Bitmap bitmap = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
                 ByteBuffer b = ByteBuffer.wrap(bytes);
+                // FIXME -- java.lang.RuntimeException: Buffer not large enough for pixels
                 bitmap.copyPixelsFromBuffer(b);
 
                 int x = (int) mSamplePoint.x;
