@@ -247,7 +247,11 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
 
     @Override
     public void onObjectPicked(@NonNull Object3D object) {
-        // TODO -- 检测有问题，index总是返回0
+        // TODO -- 检测有问题，无论触摸哪里，总是返回第一个register的Object3D
+        // 直接原因是ARCamActivity.java中的这行：
+        // ((org.rajawali3d.view.SurfaceView) mRenderSurface).getHolder().setFixedSize(VIDEO_WIDTH, VIDEO_HEIGHT);
+        // 注释这行的话则能正确检测到触摸的Object3D，但是录像会出问题
+
         Log.i(TAG, "onObjectPicked: " + object.getName());
         mPickedObject = object;
         if (mOrnamentModel != null && mObject3DList != null && mObject3DList.size() > 0) {
