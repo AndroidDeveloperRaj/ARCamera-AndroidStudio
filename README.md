@@ -16,6 +16,7 @@ Base on
 ----------------------------------- 
 * [AndroidOpenGLDemo](https://github.com/doggycoder/AndroidOpenGLDemo) by doggycoder
 * [Omoshiroi](https://github.com/Martin20150405/Omoshiroi) by Martin20150405
+* [Rajawali](https://github.com/Rajawali)
 
 Screenshot
 -----------------------------------
@@ -29,5 +30,13 @@ Screenshot
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_6.gif)
 ![image](https://github.com/SimonCherryGZ/ARCamera/raw/master/screenshots/GIF_7.gif)
 
+3D Model
+-----------------------------------
+* [Guy Fawkes MASK (V for Vendetta)](http://www.domawe.net/2015/03/guy-fawkes-mask-v-for-vendetta-free-3d.html)
+* [Tiger Nose](https://www.models-resource.com/playstation_3/littlebigplanet/model/7125/)
+* [Camera (Weapon)](https://www.models-resource.com/pc_computer/garrysmod/model/15477/)
+* [Iron Man Helmet](https://www.models-resource.com/pc_computer/roblox/model/16361/)
+* [Huawei Y560 4G Mobile Phone](https://sketchfab.com/models/45c813a9fac4458ead1f90280826c0a4) by Amir Olphat
+* [PROTAGONISTA](https://sketchfab.com/models/9834c0696cb24b81af6889adcacff391) by cirofelipelacerda
 
 > Written with [StackEdit](https://stackedit.io/).
