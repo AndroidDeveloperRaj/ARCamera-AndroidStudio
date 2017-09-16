@@ -8,9 +8,12 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.View;
 
 import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Ornament;
@@ -25,6 +28,7 @@ import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.plugins.IMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
+import org.rajawali3d.materials.textures.StreamingTexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
@@ -40,7 +44,7 @@ import java.util.List;
  * Created by Simon on 2017/7/19.
  */
 
-public class My3DRenderer extends Renderer implements OnObjectPickedListener {
+public class My3DRenderer extends Renderer implements OnObjectPickedListener, StreamingTexture.ISurfaceListener {
     private final static String TAG = My3DRenderer.class.getSimpleName();
 
     private Object3D mContainer;
@@ -55,6 +59,8 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
     private boolean mIsOrnamentVisible = true;
     private int mScreenW = 1;
     private int mScreenH = 1;
+    // 根据肤色更改模型贴图的颜色
+    private int mSkinColor = 0xffd4c9b5;
 
     private int mModelType = Ornament.TYPE_NONE;
     // 用于静态3D模型
@@ -71,12 +77,27 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
     private float mMaterialTime = 0;
     private ObjectColorPicker mPicker;
 
-    // 根据肤色更改模型贴图的颜色
-    private int mSkinColor = 0xffd4c9b5;
+    // StreamingTexture
+    private Surface mSurface;
+    private View mStreamingView;
+    private Handler mStreamingHandler;
+    private StreamingTexture mStreamingTexture;
+    private volatile boolean mShouldUpdateTexture;
+    private final float[] mMatrix = new float[16];
 
-    public void setSkinColor(int mSkinColor) {
-        this.mSkinColor = mSkinColor;
-    }
+    final Runnable mUpdateTexture = new Runnable() {
+        public void run() {
+            // -- Draw the view on the canvas
+            if (mSurface != null && mStreamingTexture != null && mStreamingView != null) {
+                final Canvas canvas = mSurface.lockCanvas(null);
+                mStreamingTexture.getSurfaceTexture().getTransformMatrix(mMatrix);
+                mStreamingView.draw(canvas);
+                mSurface.unlockCanvasAndPost(canvas);
+                // -- Indicates that the texture should be updated on the OpenGL thread.
+                mShouldUpdateTexture = true;
+            }
+        }
+    };
 
 
     public My3DRenderer(Context context) {
@@ -122,6 +143,18 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
 
     public void setScreenH(int height) {
         mScreenH = height;
+    }
+
+    public void setSkinColor(int mSkinColor) {
+        this.mSkinColor = mSkinColor;
+    }
+
+    public void setStreamingView(View streamingView) {
+        this.mStreamingView = streamingView;
+    }
+
+    public void setStreamingHandler(Handler streamingHandler) {
+        this.mStreamingHandler = streamingHandler;
     }
 
     @Override
@@ -214,6 +247,19 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
             }
         }
 
+        // -- not a really accurate way of doing things but you get the point :)
+        if (mSurface != null && mStreamingHandler != null && mFrameCount++ >= (mFrameRate * 0.25)) {
+            mFrameCount = 0;
+            mStreamingHandler.post(mUpdateTexture);
+        }
+        // -- update the texture because it is ready
+        if (mShouldUpdateTexture) {
+            if (mStreamingTexture != null) {
+                mStreamingTexture.update();
+            }
+            mShouldUpdateTexture = false;
+        }
+
         if (mPickedObject != null && mOrnamentModel != null && mObject3DList != null && mObject3DList.size() > 0) {
             int index = mObject3DList.indexOf(mPickedObject);
             if (index >= 0) {
@@ -269,6 +315,14 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
     public void onNoObjectPicked() {
     }
 
+    @Override
+    public void setSurface(Surface surface) {
+        mSurface = surface;
+        if (mStreamingTexture != null && mStreamingView != null) {
+            mStreamingTexture.getSurfaceTexture().setDefaultBufferSize(mStreamingView.getWidth(), mStreamingView.getHeight());
+        }
+    }
+
     private void clearScene() {
         if (mObject3DList != null && mObject3DList.size() > 0) {
             for (int i = 0; i < mObject3DList.size(); i++) {
@@ -284,10 +338,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
             mObject3DList.clear();
         }
 
-        if (mPicker != null) {
-            mPicker = null;
-        }
-
+        mPicker = null;
         mPickedObject = null;
 
         if (mMaterialList != null && mMaterialList.size() > 0) {
@@ -302,6 +353,8 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
             mContainer.removeChild(mShaderPlane);
             mShaderPlane = null;
         }
+
+        mStreamingTexture = null;
 
         mMaterialTime = 0;
     }
@@ -439,6 +492,30 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener {
                     mPicker.setOnObjectPickedListener(this);
                 }
                 mPicker.registerObject(object3D);
+            }
+
+            if (model.isNeedStreaming()) {
+                float planeWidth = model.getStreamingPlaneWidth();
+                float planeHeight = model.getStreamingPlaneHeight();
+                Object3D streamingPlane = new Plane(planeWidth, planeHeight, 1, 1);
+                streamingPlane.setColor(0);
+                streamingPlane.setScale(model.getScale());
+                streamingPlane.setPosition(model.getStreamingOffsetX(), model.getStreamingOffsetY(),model.getStreamingOffsetZ());
+                streamingPlane.setRotation(model.getStreamingRotateX(), model.getStreamingRotateY(), model.getStreamingRotateZ());
+                streamingPlane.setRenderChildrenAsBatch(true);
+                if (mStreamingTexture == null) {
+                    mStreamingTexture = new StreamingTexture("viewTexture", this);
+                }
+                Material material = new Material();
+                material.setColorInfluence(0);
+                try {
+                    material.addTexture(mStreamingTexture);
+                } catch (ATexture.TextureException e) {
+                    e.printStackTrace();
+                }
+                streamingPlane.setMaterial(material);
+                mContainer.addChild(streamingPlane);
+                mObject3DList.add(streamingPlane);
             }
 
             return object3D;

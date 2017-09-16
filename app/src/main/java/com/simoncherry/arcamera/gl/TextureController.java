@@ -49,6 +49,7 @@ public class TextureController implements GLSurfaceView.Renderer {
 
     private boolean isRecord = false;                             //录像flag
     private boolean isShoot = false;                              //一次拍摄flag
+    private boolean isNeedFrame = false;
     private ByteBuffer[] outPutBuffer = new ByteBuffer[3];      //用于存储回调数据的buffer
     private FrameCallback mFrameCallback;                       //回调
     private int frameCallbackWidth, frameCallbackHeight;        //回调数据的宽高
@@ -213,6 +214,18 @@ public class TextureController implements GLSurfaceView.Renderer {
         isShoot = true;
     }
 
+    public void setNeedFrame(boolean isNeedFrame) {
+        this.isNeedFrame = isNeedFrame;
+    }
+
+    public int getFrameCallbackWidth() {
+        return frameCallbackWidth;
+    }
+
+    public int getFrameCallbackHeight() {
+        return frameCallbackHeight;
+    }
+
     public void setFrameCallback(int width, int height, FrameCallback frameCallback){
         this.frameCallbackWidth = width;
         this.frameCallbackHeight = height;
@@ -249,7 +262,7 @@ public class TextureController implements GLSurfaceView.Renderer {
 
     //需要回调，则缩放图片到指定大小，读取数据并回调
     private void callbackIfNeeded() {
-        if (mFrameCallback != null && (isRecord || isShoot)) {
+        if (mFrameCallback != null && (isRecord || isShoot || isNeedFrame)) {
             indexOutput = indexOutput++ >= 2 ? 0 : indexOutput;
             if (outPutBuffer[indexOutput] == null) {
                 outPutBuffer[indexOutput] = ByteBuffer.allocate(frameCallbackWidth *
@@ -270,7 +283,10 @@ public class TextureController implements GLSurfaceView.Renderer {
     private void frameCallback(){
         GLES20.glReadPixels(0, 0, frameCallbackWidth, frameCallbackHeight,
                 GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, outPutBuffer[indexOutput]);
-        mFrameCallback.onFrame(outPutBuffer[indexOutput].array(), 0);
+        ByteBuffer byteBuffer = outPutBuffer[indexOutput];
+        if (byteBuffer != null) {
+            mFrameCallback.onFrame(byteBuffer.array(), 0);
+        }
     }
 
     public void create(int width, int height){

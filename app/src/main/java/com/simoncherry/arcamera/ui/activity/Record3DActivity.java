@@ -483,14 +483,6 @@ public class Record3DActivity extends AppCompatActivity implements FrameCallback
 //                mMask.setScale(0.15f);
 //                mMask.setY(0.01f);  // 上正下负
 //                mMask.getMaterial().enableLighting(false);
-                // 马里奥帽子
-//                final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.mario_hat_obj);
-//                parser.parse();
-//                mMask = parser.getParsedObject();
-//                mMask.setScale(0.19f);
-//                mMask.setY(-0.1f);  // 上正下负
-//                mMask.setZ(-0.35f);
-//                mMask.setRotZ(-15.0f);
                 // 老虎鼻子
                 final LoaderOBJ parser = new LoaderOBJ(mContext.getResources(), mTextureManager, R.raw.tiger_nose_obj);
                 parser.parse();

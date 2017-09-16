@@ -30,6 +30,7 @@ public class OrnamentFactory {
         ornaments.add(getLaserEye());
         ornaments.add(getCamera());
         ornaments.add(getIronMan());
+        ornaments.add(getMobile());
         return ornaments;
     }
 
@@ -201,6 +202,41 @@ public class OrnamentFactory {
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(ironManTop);
         modelList.add(ironManBottom);
+        ornament.setModelList(modelList);
+
+        return ornament;
+    }
+
+    public static Ornament getMobile() {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model model = new Ornament.Model();
+        model.setModelResId(R.raw.mobile_obj);
+        model.setScale(0.125f);
+        model.setOffset(0, 0.05f, 0.5f);
+        model.setRotate(0, 0, 0);
+        model.setColor(Color.BLACK);
+
+        model.setNeedStreaming(true);
+        model.setStreamingViewWidth(216);
+        model.setStreamingViewHeight(384);
+        model.setStreamingPlaneWidth(6.25f);
+        model.setStreamingPlaneHeight(11.1f);
+        model.setStreamingScale(1.0f);
+        model.setStreamingOffsetY(0.1f);
+        model.setStreamingOffsetZ(0.85f);
+
+        Ornament.Model rightHand = new Ornament.Model();
+        rightHand.setModelResId(R.raw.hand_hold_mobile_obj);
+        rightHand.setScale(0.125f);
+        rightHand.setOffset(0, 0.05f, 0.5f);
+        rightHand.setRotate(0, 0, 0);
+
+        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_mobile);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(model);
+        modelList.add(rightHand);
         ornament.setModelList(modelList);
 
         return ornament;

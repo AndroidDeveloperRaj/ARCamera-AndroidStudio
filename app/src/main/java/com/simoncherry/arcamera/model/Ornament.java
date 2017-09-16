@@ -221,6 +221,19 @@ public class Ornament {
         private int axisX;
         private int axisY;
         private int axisZ;
+        // for StreamingTexture
+        private boolean needStreaming;
+        private int streamingViewWidth;
+        private int streamingViewHeight;
+        private float streamingPlaneWidth;
+        private float streamingPlaneHeight;
+        private float streamingScale;
+        private float streamingOffsetX;
+        private float streamingOffsetY;
+        private float streamingOffsetZ;
+        private float streamingRotateX;
+        private float streamingRotateY;
+        private float streamingRotateZ;
 
         public String getName() {
             return name;
@@ -456,6 +469,102 @@ public class Ornament {
 
         public void setAxisZ(int axisZ) {
             this.axisZ = axisZ;
+        }
+
+        public boolean isNeedStreaming() {
+            return needStreaming;
+        }
+
+        public void setNeedStreaming(boolean needStreaming) {
+            this.needStreaming = needStreaming;
+        }
+
+        public int getStreamingViewWidth() {
+            return streamingViewWidth;
+        }
+
+        public void setStreamingViewWidth(int streamingViewWidth) {
+            this.streamingViewWidth = streamingViewWidth;
+        }
+
+        public int getStreamingViewHeight() {
+            return streamingViewHeight;
+        }
+
+        public void setStreamingViewHeight(int streamingViewHeight) {
+            this.streamingViewHeight = streamingViewHeight;
+        }
+
+        public float getStreamingPlaneWidth() {
+            return streamingPlaneWidth;
+        }
+
+        public void setStreamingPlaneWidth(float streamingPlaneWidth) {
+            this.streamingPlaneWidth = streamingPlaneWidth;
+        }
+
+        public float getStreamingPlaneHeight() {
+            return streamingPlaneHeight;
+        }
+
+        public void setStreamingPlaneHeight(float streamingPlaneHeight) {
+            this.streamingPlaneHeight = streamingPlaneHeight;
+        }
+
+        public float getStreamingScale() {
+            return streamingScale;
+        }
+
+        public void setStreamingScale(float streamingScale) {
+            this.streamingScale = streamingScale;
+        }
+
+        public float getStreamingOffsetX() {
+            return streamingOffsetX;
+        }
+
+        public void setStreamingOffsetX(float streamingOffsetX) {
+            this.streamingOffsetX = streamingOffsetX;
+        }
+
+        public float getStreamingOffsetY() {
+            return streamingOffsetY;
+        }
+
+        public void setStreamingOffsetY(float streamingOffsetY) {
+            this.streamingOffsetY = streamingOffsetY;
+        }
+
+        public float getStreamingOffsetZ() {
+            return streamingOffsetZ;
+        }
+
+        public void setStreamingOffsetZ(float streamingOffsetZ) {
+            this.streamingOffsetZ = streamingOffsetZ;
+        }
+
+        public float getStreamingRotateX() {
+            return streamingRotateX;
+        }
+
+        public void setStreamingRotateX(float streamingRotateX) {
+            this.streamingRotateX = streamingRotateX;
+        }
+
+        public float getStreamingRotateY() {
+            return streamingRotateY;
+        }
+
+        public void setStreamingRotateY(float streamingRotateY) {
+            this.streamingRotateY = streamingRotateY;
+        }
+
+        public float getStreamingRotateZ() {
+            return streamingRotateZ;
+        }
+
+        public void setStreamingRotateZ(float streamingRotateZ) {
+            this.streamingRotateZ = streamingRotateZ;
         }
     }
 }

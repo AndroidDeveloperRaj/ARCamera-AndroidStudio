@@ -8,6 +8,8 @@ import android.graphics.PointF;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -22,6 +24,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,9 +82,14 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private final static int PREVIEW_WIDTH = 640;
     private final static int PREVIEW_HEIGHT = 480;
 
+    private final static int TYPE_NONE = -1;
+    private final static int TYPE_PHOTO = 0;
+    private final static int TYPE_RECORD = 1;
+
     private Context mContext;
     private ARCamPresenter mPresenter;
 
+    private RelativeLayout mLayoutRoot;
     // 用于渲染相机预览画面
     private SurfaceView mSurfaceView;
     // 用于显示人脸检测参数
@@ -120,7 +128,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     // 录像标志位
     private boolean recordFlag = false;
     // 处理帧数据的标志位 0为拍照 1为录像
-    private int mFrameType = 0;
+    private int mFrameType = TYPE_NONE;
 
     // 滤镜列表
     private CustomBottomSheet mFilterSheet;
@@ -154,6 +162,10 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
     private int mSurfaceWidth;
     private int mSurfaceHeight;
+
+    private boolean mIsNeedStreamingView = false;
+    private ImageView mStreamingView;
+    private Handler mStreamingHandler;
 
 
     @Override
@@ -273,7 +285,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                         recordFlag = false;
                         // 短按拍照
                         if(System.currentTimeMillis() - time < 500){
-                            mFrameType = 0;
+                            mFrameType = TYPE_PHOTO;
                             mCapture.removeCallbacks(captureTouchRunnable);
                             mController.setFrameCallback(IMAGE_WIDTH, IMAGE_HEIGHT, ARCamActivity.this);
                             // 拍照时，先取Rajawali的帧数据
@@ -324,6 +336,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     }
 
     private void initCommonView() {
+        mLayoutRoot = (RelativeLayout) findViewById(R.id.layout_root);
         mTrackText = (TextView) findViewById(R.id.tv_track);
         mActionText = (TextView) findViewById(R.id.tv_action);
     }
@@ -375,6 +388,37 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                                 mController.takePhoto();
                                 return;
                             }
+                        }
+
+                        mIsNeedStreamingView = false;
+                        mController.setNeedFrame(false);
+
+                        for (Ornament.Model model : modelList) {
+                            if (model != null && model.isNeedStreaming()) {
+                                mStreamingView = new ImageView(mContext);
+                                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                                        model.getStreamingViewWidth(), model.getStreamingViewHeight());
+                                mLayoutRoot.addView(mStreamingView, layoutParams);
+                                mStreamingView.setVisibility(View.INVISIBLE);
+                                mStreamingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                mStreamingView.setImageResource(R.mipmap.ic_launcher);
+                                ((My3DRenderer) mISurfaceRenderer).setStreamingView(mStreamingView);
+
+                                if (mStreamingHandler == null) {
+                                    mStreamingHandler = new Handler(Looper.getMainLooper());
+                                }
+                                ((My3DRenderer) mISurfaceRenderer).setStreamingHandler(mStreamingHandler);
+
+                                mIsNeedStreamingView = true;
+                                mController.setNeedFrame(true);
+                                return;
+                            }
+                        }
+
+                        mStreamingHandler = null;
+                        if (mStreamingView != null) {
+                            mLayoutRoot.removeView(mStreamingView);
+                            mStreamingView = null;
                         }
                     }
                 }
@@ -521,7 +565,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
 
         @Override
         public void run() {
-            mFrameType = 1;
+            mFrameType = TYPE_RECORD;
             long timeCount = 0;
             if(mp4Recorder == null){
                 mp4Recorder = new CameraRecorder();
@@ -549,6 +593,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 }
                 mController.stopRecord();
                 ((org.rajawali3d.view.SurfaceView) mRenderSurface).stopRecord();
+                mFrameType = TYPE_NONE;
 
                 if(timeCount < 2000){
                     mp4Recorder.cancel();
@@ -627,6 +672,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         super.onResume();
         if (mController != null) {
             mController.onResume();
+            mController.setNeedFrame(mIsNeedStreamingView);
         }
     }
 
@@ -634,6 +680,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     protected void onPause() {
         super.onPause();
         if (mController != null) {
+            mController.setNeedFrame(false);
             mController.onPause();
         }
     }
@@ -642,16 +689,34 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     protected void onDestroy() {
         super.onDestroy();
         if (mController != null) {
+            mController.setNeedFrame(false);
             mController.destroy();
         }
     }
 
     @Override
     public void onFrame(final byte[] bytes, long time) {
+        // 录像有问题，暂时跳过
+        if (mIsNeedStreamingView && mStreamingView != null && mFrameType != TYPE_RECORD) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    int bitmapWidth = mController.getFrameCallbackWidth();
+                    int bitmapHeight = mController.getFrameCallbackHeight();
+                    Bitmap bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
+                            Bitmap.Config.ARGB_8888);
+                    ByteBuffer b = ByteBuffer.wrap(bytes);
+                    bitmap.copyPixelsFromBuffer(b);
+                    mStreamingView.setImageBitmap(bitmap);
+                }
+            });
+        }
+
         if (mIsNeedSkinColor) {  // 获取人脸中心点的颜色
             Log.e(TAG, "isNeedSkinColor");
             if (mSamplePoint != null) {
-                Bitmap bitmap = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+                Bitmap bitmap = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT,
+                        Bitmap.Config.ARGB_8888);
                 ByteBuffer b = ByteBuffer.wrap(bytes);
                 // FIXME -- java.lang.RuntimeException: Buffer not large enough for pixels
                 bitmap.copyPixelsFromBuffer(b);
@@ -669,9 +734,10 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 ((My3DRenderer) mISurfaceRenderer).setSkinColor(pixel);
             }
 
-        } else if (mp4Recorder != null && mFrameType == 1) {  // 处理录像
+        } else if (mp4Recorder != null && mFrameType == TYPE_RECORD) {  // 处理录像
             handleVideoFrame(bytes);
-        } else {  // 处理拍照
+        } else if (mFrameType == TYPE_PHOTO) {  // 处理拍照
+            mFrameType = TYPE_NONE;
             handlePhotoFrame(bytes);
         }
     }
