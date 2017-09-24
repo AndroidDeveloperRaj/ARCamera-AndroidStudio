@@ -379,48 +379,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 ((My3DRenderer) mISurfaceRenderer).setOrnamentModel(ornament);
                 ((My3DRenderer) mISurfaceRenderer).setIsNeedUpdateOrnament(true);
                 if (ornament != null) {
-                    List<Ornament.Model> modelList = ornament.getModelList();
-                    if (modelList != null && modelList.size() > 0) {
-                        for (Ornament.Model model : modelList) {
-                            if (model != null && model.isNeedSkinColor()) {
-                                // 获取人脸中心点的颜色
-                                mIsNeedSkinColor = true;
-                                mController.takePhoto();
-                                return;
-                            }
-                        }
-
-                        mIsNeedStreamingView = false;
-                        mController.setNeedFrame(false);
-
-                        for (Ornament.Model model : modelList) {
-                            if (model != null && model.isNeedStreaming()) {
-                                mStreamingView = new ImageView(mContext);
-                                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                                        model.getStreamingViewWidth(), model.getStreamingViewHeight());
-                                mLayoutRoot.addView(mStreamingView, layoutParams);
-                                mStreamingView.setVisibility(View.INVISIBLE);
-                                mStreamingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                mStreamingView.setImageResource(R.mipmap.ic_launcher);
-                                ((My3DRenderer) mISurfaceRenderer).setStreamingView(mStreamingView);
-
-                                if (mStreamingHandler == null) {
-                                    mStreamingHandler = new Handler(Looper.getMainLooper());
-                                }
-                                ((My3DRenderer) mISurfaceRenderer).setStreamingHandler(mStreamingHandler);
-
-                                mIsNeedStreamingView = true;
-                                mController.setNeedFrame(true);
-                                return;
-                            }
-                        }
-
-                        mStreamingHandler = null;
-                        if (mStreamingView != null) {
-                            mLayoutRoot.removeView(mStreamingView);
-                            mStreamingView = null;
-                        }
-                    }
+                    handleSkinColor(ornament);
+                    handleStreamingTexture(ornament);
+                    handleFilterInsideOrnament(ornament);
                 }
             }
         });
@@ -438,6 +399,67 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         mOrnaments.addAll(OrnamentFactory.getPresetOrnament());
         mOrnaments.addAll(OrnamentFactory.getPresetMask());
         mOrnamentAdapter.notifyDataSetChanged();
+    }
+
+    private void handleSkinColor(Ornament ornament) {
+        List<Ornament.Model> modelList = ornament.getModelList();
+        if (modelList != null && modelList.size() > 0) {
+            for (Ornament.Model model : modelList) {
+                if (model != null && model.isNeedSkinColor()) {
+                    // 获取人脸中心点的颜色
+                    mIsNeedSkinColor = true;
+                    mController.takePhoto();
+                    return;
+                }
+            }
+        }
+    }
+
+    private void handleStreamingTexture(Ornament ornament) {
+        mIsNeedStreamingView = false;
+        mController.setNeedFrame(false);
+        mController.setFrameCallbackType(ornament.getFrameCallbackType());
+
+        mStreamingHandler = null;
+        if (mStreamingView != null) {
+            mLayoutRoot.removeView(mStreamingView);
+            mStreamingView = null;
+        }
+
+        List<Ornament.Model> modelList = ornament.getModelList();
+        if (modelList != null && modelList.size() > 0) {
+            for (Ornament.Model model : modelList) {
+                if (model != null && model.isNeedStreaming()) {
+                    mStreamingView = new ImageView(mContext);
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                            model.getStreamingViewWidth(), model.getStreamingViewHeight());
+                    mLayoutRoot.addView(mStreamingView, layoutParams);
+                    mStreamingView.setVisibility(View.INVISIBLE);
+                    mStreamingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    mStreamingView.setImageResource(R.mipmap.ic_launcher);
+                    ((My3DRenderer) mISurfaceRenderer).setStreamingView(mStreamingView);
+
+                    if (mStreamingHandler == null) {
+                        mStreamingHandler = new Handler(Looper.getMainLooper());
+                    }
+                    ((My3DRenderer) mISurfaceRenderer).setStreamingHandler(mStreamingHandler);
+
+                    mIsNeedStreamingView = true;
+                    mController.setNeedFrame(true);
+                    return;
+                }
+            }
+        }
+    }
+
+    private void handleFilterInsideOrnament(Ornament ornament) {
+        if (ornament != null) {
+            int selectFilterId = ornament.getSelectFilterId();
+            if (selectFilterId != R.id.menu_camera_default) {
+                mCurrentFilterId = selectFilterId;
+                setSingleFilter(mController, mCurrentFilterId);
+            }
+        }
     }
 
     private void initEffectSheet() {
@@ -707,7 +729,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                             Bitmap.Config.ARGB_8888);
                     ByteBuffer b = ByteBuffer.wrap(bytes);
                     bitmap.copyPixelsFromBuffer(b);
-                    mStreamingView.setImageBitmap(bitmap);
+                    if (mStreamingView != null) {
+                        mStreamingView.setImageBitmap(bitmap);
+                    }
                 }
             });
         }

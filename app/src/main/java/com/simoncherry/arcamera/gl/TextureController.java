@@ -55,6 +55,12 @@ public class TextureController implements GLSurfaceView.Renderer {
     private int frameCallbackWidth, frameCallbackHeight;        //回调数据的宽高
     private int indexOutput=0;                                  //回调数据使用的buffer索引
 
+    public static final int FRAME_CALLBACK_DEFAULT = 0;
+    public static final int FRAME_CALLBACK_NO_FILTER = 1;
+    public static final int FRAME_ONLY_CALLBACK_FILTER = 2;
+
+    private int mFrameCallbackType = FRAME_CALLBACK_DEFAULT;
+
 
     public TextureController(Context context) {
         this.mContext = context;
@@ -172,8 +178,15 @@ public class TextureController implements GLSurfaceView.Renderer {
             //显示传入的texture上，一般是显示在屏幕上
             GLES20.glViewport(0, 0, mWindowSize.x, mWindowSize.y);
             mShowFilter.setMatrix(SM);
-            mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
+
+//            mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
+            if (mFrameCallbackType == FRAME_CALLBACK_DEFAULT || mFrameCallbackType == FRAME_CALLBACK_NO_FILTER) {
+                mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
+            } else if (mFrameCallbackType == FRAME_ONLY_CALLBACK_FILTER) {
+                mShowFilter.setTextureId(mEffectFilter.getOutputTexture());
+            }
             mShowFilter.draw();
+
             if(mRenderer != null){
                 mRenderer.onDrawFrame(gl);
             }
@@ -260,6 +273,10 @@ public class TextureController implements GLSurfaceView.Renderer {
         }
     }
 
+    public void setFrameCallbackType(int type) {
+        mFrameCallbackType = type;
+    }
+
     //需要回调，则缩放图片到指定大小，读取数据并回调
     private void callbackIfNeeded() {
         if (mFrameCallback != null && (isRecord || isShoot || isNeedFrame)) {
@@ -270,6 +287,13 @@ public class TextureController implements GLSurfaceView.Renderer {
             }
             GLES20.glViewport(0, 0, frameCallbackWidth, frameCallbackHeight);
             EasyGlUtils.bindFrameTexture(mExportFrame[0],mExportTexture[0]);
+
+            if (mFrameCallbackType == FRAME_CALLBACK_DEFAULT || mFrameCallbackType == FRAME_ONLY_CALLBACK_FILTER) {
+                mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
+            } else if (mFrameCallbackType == FRAME_CALLBACK_NO_FILTER) {
+                mShowFilter.setTextureId(mEffectFilter.getOutputTexture());
+            }
+
             mShowFilter.setMatrix(callbackOM);
             mShowFilter.draw();
             frameCallback();

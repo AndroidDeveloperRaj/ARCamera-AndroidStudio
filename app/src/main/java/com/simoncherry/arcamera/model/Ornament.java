@@ -1,5 +1,8 @@
 package com.simoncherry.arcamera.model;
 
+import com.simoncherry.arcamera.R;
+import com.simoncherry.arcamera.gl.TextureController;
+
 import org.rajawali3d.Object3D;
 import org.rajawali3d.animation.Animation3D;
 import org.rajawali3d.materials.plugins.IMaterialPlugin;
@@ -30,6 +33,9 @@ public class Ornament {
     private float rotateX;
     private float rotateY;
     private float rotateZ;
+    private boolean enableRotation = true;
+    private boolean enableTransition = true;
+    private boolean enableScale = true;
 
     private boolean hasShaderPlane;
     private int vertResId;
@@ -37,6 +43,9 @@ public class Ornament {
     private float planeOffsetX;
     private float planeOffsetY;
     private float planeOffsetZ;
+    private int frameCallbackType = TextureController.FRAME_CALLBACK_DEFAULT;
+
+    private int selectFilterId = R.id.menu_camera_default;
 
 
     public int getType() {
@@ -143,6 +152,30 @@ public class Ornament {
         this.rotateZ = rotateZ;
     }
 
+    public boolean isEnableRotation() {
+        return enableRotation;
+    }
+
+    public void setEnableRotation(boolean enableRotation) {
+        this.enableRotation = enableRotation;
+    }
+
+    public boolean isEnableTransition() {
+        return enableTransition;
+    }
+
+    public void setEnableTransition(boolean enableTransition) {
+        this.enableTransition = enableTransition;
+    }
+
+    public boolean isEnableScale() {
+        return enableScale;
+    }
+
+    public void setEnableScale(boolean enableScale) {
+        this.enableScale = enableScale;
+    }
+
     public boolean isHasShaderPlane() {
         return hasShaderPlane;
     }
@@ -191,6 +224,22 @@ public class Ornament {
         this.planeOffsetZ = planeOffsetZ;
     }
 
+    public int getFrameCallbackType() {
+        return frameCallbackType;
+    }
+
+    public void setFrameCallbackType(int frameCallbackType) {
+        this.frameCallbackType = frameCallbackType;
+    }
+
+    public int getSelectFilterId() {
+        return selectFilterId;
+    }
+
+    public void setSelectFilterId(int selectFilterId) {
+        this.selectFilterId = selectFilterId;
+    }
+
     public static class Model {
         private String name;
         private int modelResId;
@@ -234,6 +283,7 @@ public class Ornament {
         private float streamingRotateX;
         private float streamingRotateY;
         private float streamingRotateZ;
+        private int alphaMapResId = -1;
 
         public String getName() {
             return name;
@@ -565,6 +615,14 @@ public class Ornament {
 
         public void setStreamingRotateZ(float streamingRotateZ) {
             this.streamingRotateZ = streamingRotateZ;
+        }
+
+        public int getAlphaMapResId() {
+            return alphaMapResId;
+        }
+
+        public void setAlphaMapResId(int alphaMapResId) {
+            this.alphaMapResId = alphaMapResId;
         }
     }
 }

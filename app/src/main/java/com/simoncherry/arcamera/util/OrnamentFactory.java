@@ -3,6 +3,7 @@ package com.simoncherry.arcamera.util;
 import android.graphics.Color;
 
 import com.simoncherry.arcamera.R;
+import com.simoncherry.arcamera.gl.TextureController;
 import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.rajawali.CustomMaterialPlugin;
 import com.simoncherry.arcamera.rajawali.CustomVertexShaderMaterialPlugin;
@@ -31,6 +32,8 @@ public class OrnamentFactory {
         ornaments.add(getCamera());
         ornaments.add(getIronMan());
         ornaments.add(getMobile());
+        ornaments.add(getMirror(TextureController.FRAME_ONLY_CALLBACK_FILTER));
+        ornaments.add(getMirror(TextureController.FRAME_CALLBACK_NO_FILTER));
         return ornaments;
     }
 
@@ -173,7 +176,7 @@ public class OrnamentFactory {
         return ornament;
     }
 
-    public static Ornament getIronMan() {
+    private static Ornament getIronMan() {
         Ornament ornament = new Ornament();
 
         Ornament.Model ironManTop = new Ornament.Model();
@@ -207,7 +210,7 @@ public class OrnamentFactory {
         return ornament;
     }
 
-    public static Ornament getMobile() {
+    private static Ornament getMobile() {
         Ornament ornament = new Ornament();
 
         Ornament.Model model = new Ornament.Model();
@@ -242,6 +245,39 @@ public class OrnamentFactory {
         return ornament;
     }
 
+    private static Ornament getMirror(int frameCallbackType) {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model model = new Ornament.Model();
+        model.setModelResId(R.raw.magic_mirror_obj);
+        model.setScale(0.35f);
+        model.setOffset(0, 0, -0.5f);
+        model.setRotate(0, 0, 0);
+        model.setColor(Color.BLACK);
+
+        model.setNeedStreaming(true);
+        model.setStreamingViewWidth(200);
+        model.setStreamingViewHeight(200);
+        model.setStreamingPlaneWidth(3.5f);
+        model.setStreamingPlaneHeight(3.5f);
+        model.setStreamingScale(1.0f);
+        model.setStreamingOffsetX(0.03f);
+        model.setStreamingOffsetY(0.05f);
+        model.setStreamingOffsetZ(2.22f);
+        model.setAlphaMapResId(R.drawable.circle_alpha);
+
+        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_mirror);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(model);
+        ornament.setModelList(modelList);
+        ornament.setEnableRotation(false);
+        ornament.setEnableScale(false);
+        ornament.setFrameCallbackType(frameCallbackType);
+        ornament.setSelectFilterId(R.id.menu_camera_negative);
+
+        return ornament;
+    }
 
     public static List<Ornament> getPresetMask() {
         List<Ornament> ornaments = new ArrayList<>();

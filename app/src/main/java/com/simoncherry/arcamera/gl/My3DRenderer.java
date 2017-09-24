@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 
+import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.rajawali.MyFragmentShader;
@@ -28,6 +29,7 @@ import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.plugins.IMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
+import org.rajawali3d.materials.textures.AlphaMapTexture;
 import org.rajawali3d.materials.textures.StreamingTexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
@@ -85,16 +87,20 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
     private volatile boolean mShouldUpdateTexture;
     private final float[] mMatrix = new float[16];
 
-    final Runnable mUpdateTexture = new Runnable() {
+    private final Runnable mUpdateTexture = new Runnable() {
         public void run() {
             // -- Draw the view on the canvas
             if (mSurface != null && mStreamingTexture != null && mStreamingView != null) {
-                final Canvas canvas = mSurface.lockCanvas(null);
-                mStreamingTexture.getSurfaceTexture().getTransformMatrix(mMatrix);
-                mStreamingView.draw(canvas);
-                mSurface.unlockCanvasAndPost(canvas);
-                // -- Indicates that the texture should be updated on the OpenGL thread.
-                mShouldUpdateTexture = true;
+                try {
+                    final Canvas canvas = mSurface.lockCanvas(null);
+                    mStreamingTexture.getSurfaceTexture().getTransformMatrix(mMatrix);
+                    mStreamingView.draw(canvas);
+                    mSurface.unlockCanvasAndPost(canvas);
+                    // -- Indicates that the texture should be updated on the OpenGL thread.
+                    mShouldUpdateTexture = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     };
@@ -181,13 +187,23 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
         }
 
         if (mModelType == Ornament.TYPE_STATIC || mModelType == Ornament.TYPE_BUILT_IN) {
-            // 处理3D模型的旋转
-            mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
-            // 处理3D模型的缩放
-            mContainer.setScale(mScale);
-            // 处理3D模型的平移
-            getCurrentCamera().setX(mTransX);
-            getCurrentCamera().setY(mTransY);
+            if (mOrnamentModel != null) {
+                if (mOrnamentModel.isEnableRotation()) {
+                    // 处理3D模型的旋转
+                    mContainer.setRotation(mAccValues.x, mAccValues.y, mAccValues.z);
+                }
+
+                if (mOrnamentModel.isEnableScale()) {
+                    // 处理3D模型的缩放
+                    mContainer.setScale(mScale);
+                }
+
+                if (mOrnamentModel.isEnableTransition()) {
+                    // 处理3D模型的平移
+                    getCurrentCamera().setX(mTransX);
+                    getCurrentCamera().setY(mTransY);
+                }
+            }
 
             if (mOrnamentModel != null && mOrnamentModel.getTimeStep() > 0 && mMaterialList != null) {
                 for (int i = 0; i < mMaterialList.size(); i++) {
@@ -512,6 +528,10 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
                     material.addTexture(mStreamingTexture);
                 } catch (ATexture.TextureException e) {
                     e.printStackTrace();
+                }
+
+                if (model.getAlphaMapResId() > 0) {
+                    material.addTexture(new AlphaMapTexture("alphaMapTex", R.drawable.circle_alpha));
                 }
                 streamingPlane.setMaterial(material);
                 mContainer.addChild(streamingPlane);
