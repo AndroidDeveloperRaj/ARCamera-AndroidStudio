@@ -39,5 +39,6 @@ Screenshot
 * [Huawei Y560 4G Mobile Phone](https://sketchfab.com/models/45c813a9fac4458ead1f90280826c0a4) by Amir Olphat
 * [PROTAGONISTA](https://sketchfab.com/models/9834c0696cb24b81af6889adcacff391) by cirofelipelacerda
 * [Mirror](http://www.zeldacapital.com/3d.php)
+* [Nerd glasses](https://www.sharecg.com/v/69926/view/5/3D-Model/Nerd-glasses)
 
 > Written with [StackEdit](https://stackedit.io/).
