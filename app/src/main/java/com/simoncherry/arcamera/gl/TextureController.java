@@ -55,6 +55,7 @@ public class TextureController implements GLSurfaceView.Renderer {
     private int frameCallbackWidth, frameCallbackHeight;        //回调数据的宽高
     private int indexOutput=0;                                  //回调数据使用的buffer索引
 
+    public static final int FRAME_CALLBACK_DISABLE = -1;
     public static final int FRAME_CALLBACK_DEFAULT = 0;
     public static final int FRAME_CALLBACK_NO_FILTER = 1;
     public static final int FRAME_ONLY_CALLBACK_FILTER = 2;

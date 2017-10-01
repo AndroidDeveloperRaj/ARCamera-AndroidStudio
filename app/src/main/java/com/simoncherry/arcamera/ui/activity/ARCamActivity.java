@@ -23,6 +23,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -163,8 +166,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     private int mSurfaceWidth;
     private int mSurfaceHeight;
 
-    private boolean mIsNeedStreamingView = false;
-    private ImageView mStreamingView;
+    private boolean mIsNeedFrameCallback = false;
+    private View mStreamingView;
     private Handler mStreamingHandler;
 
 
@@ -382,6 +385,11 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                     handleSkinColor(ornament);
                     handleStreamingTexture(ornament);
                     handleFilterInsideOrnament(ornament);
+
+                    String toastMsg = ornament.getToastMsg();
+                    if (toastMsg != null) {
+                        Toast.makeText(mContext, toastMsg, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -416,7 +424,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     }
 
     private void handleStreamingTexture(Ornament ornament) {
-        mIsNeedStreamingView = false;
+        mIsNeedFrameCallback = false;
         mController.setNeedFrame(false);
         mController.setFrameCallbackType(ornament.getFrameCallbackType());
 
@@ -430,13 +438,18 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         if (modelList != null && modelList.size() > 0) {
             for (Ornament.Model model : modelList) {
                 if (model != null && model.isNeedStreaming()) {
-                    mStreamingView = new ImageView(mContext);
+
+                    int streamingViewType = model.getStreamingViewType();
+                    if (streamingViewType == Ornament.STREAMING_IMAGE_VIEW) {
+                        handleStreamingTextureImageView();
+                    } else if (streamingViewType == Ornament.STREAMING_WEB_VIEW) {
+                        handleStreamingTextureWebView();
+                    }
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                             model.getStreamingViewWidth(), model.getStreamingViewHeight());
                     mLayoutRoot.addView(mStreamingView, layoutParams);
                     mStreamingView.setVisibility(View.INVISIBLE);
-                    mStreamingView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    mStreamingView.setImageResource(R.mipmap.ic_launcher);
+
                     ((My3DRenderer) mISurfaceRenderer).setStreamingView(mStreamingView);
 
                     if (mStreamingHandler == null) {
@@ -444,12 +457,45 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                     }
                     ((My3DRenderer) mISurfaceRenderer).setStreamingHandler(mStreamingHandler);
 
-                    mIsNeedStreamingView = true;
-                    mController.setNeedFrame(true);
+                    if (ornament.getFrameCallbackType() != TextureController.FRAME_CALLBACK_DISABLE) {
+                        mIsNeedFrameCallback = true;
+                        mController.setNeedFrame(true);
+                    }
                     return;
                 }
             }
         }
+    }
+
+    private void handleStreamingTextureImageView() {
+        mStreamingView = new ImageView(mContext);
+        ((ImageView) mStreamingView).setScaleType(ImageView.ScaleType.CENTER_CROP);
+    }
+
+    private void handleStreamingTextureWebView() {
+        mStreamingView = new WebView(mContext);
+        ((WebView) mStreamingView).setWebViewClient(new WebViewClient());
+        setDesktopMode(((WebView) mStreamingView), true);
+        ((WebView) mStreamingView).setInitialScale(300);
+        ((WebView) mStreamingView).loadUrl("https://github.com/SimonCherryGZ/ARCamera");
+    }
+
+    private void setDesktopMode(WebView webView, boolean enabled) {
+        final WebSettings webSettings = webView.getSettings();
+
+        final String newUserAgent;
+        if (enabled) {
+            newUserAgent = webSettings.getUserAgentString().replace("Mobile", "eliboM").replace("Android", "diordnA");
+        }
+        else {
+            newUserAgent = webSettings.getUserAgentString().replace("eliboM", "Mobile").replace("diordnA", "Android");
+        }
+
+        webSettings.setUserAgentString(newUserAgent);
+        webSettings.setUseWideViewPort(enabled);
+        webSettings.setLoadWithOverviewMode(enabled);
+        webSettings.setSupportZoom(enabled);
+        webSettings.setBuiltInZoomControls(enabled);
     }
 
     private void handleFilterInsideOrnament(Ornament ornament) {
@@ -694,7 +740,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
         super.onResume();
         if (mController != null) {
             mController.onResume();
-            mController.setNeedFrame(mIsNeedStreamingView);
+            mController.setNeedFrame(mIsNeedFrameCallback);
         }
     }
 
@@ -719,7 +765,7 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     @Override
     public void onFrame(final byte[] bytes, long time) {
         // 录像有问题，暂时跳过
-        if (mIsNeedStreamingView && mStreamingView != null && mFrameType != TYPE_RECORD) {
+        if (mIsNeedFrameCallback && mStreamingView != null && mFrameType != TYPE_RECORD) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -729,8 +775,8 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                             Bitmap.Config.ARGB_8888);
                     ByteBuffer b = ByteBuffer.wrap(bytes);
                     bitmap.copyPixelsFromBuffer(b);
-                    if (mStreamingView != null) {
-                        mStreamingView.setImageBitmap(bitmap);
+                    if (mStreamingView != null && mStreamingView instanceof ImageView) {
+                        ((ImageView) mStreamingView).setImageBitmap(bitmap);
                     }
                 }
             });
@@ -794,6 +840,26 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
     @Override
     public void onGet3dModelRotation(float pitch, float roll, float yaw) {
         ((My3DRenderer) mISurfaceRenderer).setAccelerometerValues(roll, yaw, pitch);
+
+        if (mStreamingView != null && mStreamingView instanceof WebView) {
+            if (!mStreamingView.canScrollHorizontally(-1) && yaw > 0) {
+                yaw = 0;
+            }
+
+            if (!mStreamingView.canScrollHorizontally(1) && yaw < 0) {
+                yaw = 0;
+            }
+
+            if (!mStreamingView.canScrollVertically(-1) && pitch > 0) {
+                pitch = 0;
+            }
+
+            if (!mStreamingView.canScrollVertically(1) && pitch < 0) {
+                pitch = 0;
+            }
+
+            mStreamingView.scrollBy((int) (-yaw * 3), (int) (-pitch * 3));
+        }
     }
 
     @Override

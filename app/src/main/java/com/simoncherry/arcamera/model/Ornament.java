@@ -15,12 +15,15 @@ import java.util.List;
 
 public class Ornament {
 
-    public static final int TYPE_NONE = -1;
-    public static final int TYPE_STATIC = 0;
-    public static final int TYPE_DYNAMIC = 1;
-    public static final int TYPE_BUILT_IN = 2;
+    public static final int MODEL_TYPE_NONE = -1;
+    public static final int MODEL_TYPE_STATIC = 0;
+    public static final int MODEL_TYPE_DYNAMIC = 1;
+    public static final int MODEL_TYPE_BUILT_IN = 2;
 
-    private int type = TYPE_NONE;
+    public static final int STREAMING_IMAGE_VIEW = 0;
+    public static final int STREAMING_WEB_VIEW = 1;
+
+    private int type = MODEL_TYPE_NONE;
     private int imgResId;
     private List<Model> modelList;
     private List<Object3D> object3DList;
@@ -36,6 +39,7 @@ public class Ornament {
     private boolean enableRotation = true;
     private boolean enableTransition = true;
     private boolean enableScale = true;
+    private String toastMsg = null;
 
     private boolean hasShaderPlane;
     private int vertResId;
@@ -43,8 +47,8 @@ public class Ornament {
     private float planeOffsetX;
     private float planeOffsetY;
     private float planeOffsetZ;
-    private int frameCallbackType = TextureController.FRAME_CALLBACK_DEFAULT;
 
+    private int frameCallbackType = TextureController.FRAME_CALLBACK_DEFAULT;
     private int selectFilterId = R.id.menu_camera_default;
 
 
@@ -176,6 +180,14 @@ public class Ornament {
         this.enableScale = enableScale;
     }
 
+    public String getToastMsg() {
+        return toastMsg;
+    }
+
+    public void setToastMsg(String toastMsg) {
+        this.toastMsg = toastMsg;
+    }
+
     public boolean isHasShaderPlane() {
         return hasShaderPlane;
     }
@@ -272,6 +284,7 @@ public class Ornament {
         private int axisZ;
         // for StreamingTexture
         private boolean needStreaming;
+        private int streamingViewType = STREAMING_IMAGE_VIEW;
         private int streamingViewWidth;
         private int streamingViewHeight;
         private float streamingPlaneWidth;
@@ -283,6 +296,7 @@ public class Ornament {
         private float streamingRotateX;
         private float streamingRotateY;
         private float streamingRotateZ;
+        private boolean streamingViewMirror = false;
         private int alphaMapResId = -1;
 
         public String getName() {
@@ -529,6 +543,14 @@ public class Ornament {
             this.needStreaming = needStreaming;
         }
 
+        public int getStreamingViewType() {
+            return streamingViewType;
+        }
+
+        public void setStreamingViewType(int streamingViewType) {
+            this.streamingViewType = streamingViewType;
+        }
+
         public int getStreamingViewWidth() {
             return streamingViewWidth;
         }
@@ -615,6 +637,14 @@ public class Ornament {
 
         public void setStreamingRotateZ(float streamingRotateZ) {
             this.streamingRotateZ = streamingRotateZ;
+        }
+
+        public boolean isStreamingViewMirror() {
+            return streamingViewMirror;
+        }
+
+        public void setStreamingViewMirror(boolean streamingViewMirror) {
+            this.streamingViewMirror = streamingViewMirror;
         }
 
         public int getAlphaMapResId() {

@@ -15,7 +15,6 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 
-import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.model.DynamicPoint;
 import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.rajawali.MyFragmentShader;
@@ -64,7 +63,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
     // 根据肤色更改模型贴图的颜色
     private int mSkinColor = 0xffd4c9b5;
 
-    private int mModelType = Ornament.TYPE_NONE;
+    private int mModelType = Ornament.MODEL_TYPE_NONE;
     // 用于静态3D模型
     private Vector3 mAccValues;
     private float mTransX = 0.0f;
@@ -86,6 +85,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
     private StreamingTexture mStreamingTexture;
     private volatile boolean mShouldUpdateTexture;
     private final float[] mMatrix = new float[16];
+    private boolean mIsStreamingViewMirror = false;
 
     private final Runnable mUpdateTexture = new Runnable() {
         public void run() {
@@ -93,6 +93,11 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             if (mSurface != null && mStreamingTexture != null && mStreamingView != null) {
                 try {
                     final Canvas canvas = mSurface.lockCanvas(null);
+                    canvas.translate(mStreamingView.getScrollX(), -mStreamingView.getScrollY());
+                    if (mIsStreamingViewMirror) {
+                        // 镜像
+                        canvas.scale(-1, 1, mStreamingView.getWidth() / 2, mStreamingView.getHeight() / 2);
+                    }
                     mStreamingTexture.getSurfaceTexture().getTransformMatrix(mMatrix);
                     mStreamingView.draw(canvas);
                     mSurface.unlockCanvasAndPost(canvas);
@@ -131,7 +136,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
 
     // 设置3D模型的平移
     public void setTransition(float x, float y, float z) {
-        if (mModelType == Ornament.TYPE_STATIC || mModelType == Ornament.TYPE_BUILT_IN) {
+        if (mModelType == Ornament.MODEL_TYPE_STATIC || mModelType == Ornament.MODEL_TYPE_BUILT_IN) {
             mTransX = x;
             mTransY = y;
             setScale(z);
@@ -186,7 +191,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             loadOrnament();
         }
 
-        if (mModelType == Ornament.TYPE_STATIC || mModelType == Ornament.TYPE_BUILT_IN) {
+        if (mModelType == Ornament.MODEL_TYPE_STATIC || mModelType == Ornament.MODEL_TYPE_BUILT_IN) {
             if (mOrnamentModel != null) {
                 if (mOrnamentModel.isEnableRotation()) {
                     // 处理3D模型的旋转
@@ -218,7 +223,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
                 }
             }
 
-        } else if (mModelType == Ornament.TYPE_DYNAMIC) {
+        } else if (mModelType == Ornament.MODEL_TYPE_DYNAMIC) {
             if (!mIsChanging && mPoints != null && mPoints.size() > 0) {
                 mIsChanging = true;
 
@@ -370,6 +375,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             mShaderPlane = null;
         }
 
+        mIsStreamingViewMirror = false;
         mStreamingTexture = null;
 
         mMaterialTime = 0;
@@ -382,11 +388,11 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             if (mOrnamentModel != null) {
                 mModelType = mOrnamentModel.getType();
                 switch (mModelType) {
-                    case Ornament.TYPE_BUILT_IN:
+                    case Ornament.MODEL_TYPE_BUILT_IN:
                         loadBuildInModel();
                         break;
-                    case Ornament.TYPE_STATIC:
-                    case Ornament.TYPE_DYNAMIC:
+                    case Ornament.MODEL_TYPE_STATIC:
+                    case Ornament.MODEL_TYPE_DYNAMIC:
                         loadExtraModel();
                         initOrnamentParams();
                         break;
@@ -499,7 +505,12 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
 
             int color = model.getColor();
             if (color != OrnamentFactory.NO_COLOR) {
-                object3D.getMaterial().setColor(color);
+                Material material = object3D.getMaterial();
+                if (material == null) {
+                    material = new Material();
+                }
+                material.setColor(color);
+                object3D.setMaterial(material);
             }
 
             if (model.isNeedObjectPick()) {
@@ -531,11 +542,13 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
                 }
 
                 if (model.getAlphaMapResId() > 0) {
-                    material.addTexture(new AlphaMapTexture("alphaMapTex", R.drawable.circle_alpha));
+                    material.addTexture(new AlphaMapTexture("alphaMapTex", model.getAlphaMapResId()));
                 }
                 streamingPlane.setMaterial(material);
                 mContainer.addChild(streamingPlane);
                 mObject3DList.add(streamingPlane);
+
+                mIsStreamingViewMirror = model.isStreamingViewMirror();
             }
 
             return object3D;

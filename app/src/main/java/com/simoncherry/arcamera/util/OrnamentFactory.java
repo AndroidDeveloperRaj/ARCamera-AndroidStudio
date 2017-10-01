@@ -34,12 +34,13 @@ public class OrnamentFactory {
         ornaments.add(getMobile());
         ornaments.add(getMirror(TextureController.FRAME_ONLY_CALLBACK_FILTER));
         ornaments.add(getMirror(TextureController.FRAME_CALLBACK_NO_FILTER));
+        ornaments.add(getGlasses());
         return ornaments;
     }
 
     private static Ornament getNoOrnament() {
         Ornament ornament = new Ornament();
-        ornament.setType(Ornament.TYPE_NONE);
+        ornament.setType(Ornament.MODEL_TYPE_NONE);
         ornament.setImgResId(R.drawable.ic_remove);
         return ornament;
     }
@@ -54,7 +55,7 @@ public class OrnamentFactory {
         model.setRotate(0.0f, 0.0f, 0.0f);
         model.setColor(0xffe06666);
 
-        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_tiger);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(model);
@@ -73,7 +74,7 @@ public class OrnamentFactory {
         model.setRotate(0, 0, 0);
         model.setColor(Color.BLACK);
 
-        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_v_mask);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(model);
@@ -129,7 +130,7 @@ public class OrnamentFactory {
         materialList.add(laserPlugins);
         materialList.add(spherePlugins);
 
-        ornament.setType(Ornament.TYPE_BUILT_IN);
+        ornament.setType(Ornament.MODEL_TYPE_BUILT_IN);
         ornament.setImgResId(R.drawable.ic_laser);
         ornament.setObject3DList(object3DList);
         ornament.setMaterialList(materialList);
@@ -159,7 +160,7 @@ public class OrnamentFactory {
         rightHand.setOffset(0, -0.01f, -0.5f);
         rightHand.setRotate(0, 0, 0);
 
-        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_camera);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(camera);
@@ -200,12 +201,13 @@ public class OrnamentFactory {
         ironManBottom.setScale(0.75f);
         ironManBottom.setOffset(0, -0.5f, 0);
 
-        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_iron_man);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(ironManTop);
         modelList.add(ironManBottom);
         ornament.setModelList(modelList);
+        ornament.setToastMsg("点击头盔");
 
         return ornament;
     }
@@ -235,7 +237,7 @@ public class OrnamentFactory {
         rightHand.setOffset(0, 0.05f, 0.5f);
         rightHand.setRotate(0, 0, 0);
 
-        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_mobile);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(model);
@@ -266,7 +268,7 @@ public class OrnamentFactory {
         model.setStreamingOffsetZ(2.22f);
         model.setAlphaMapResId(R.drawable.circle_alpha);
 
-        ornament.setType(Ornament.TYPE_STATIC);
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_mirror);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(model);
@@ -275,6 +277,40 @@ public class OrnamentFactory {
         ornament.setEnableScale(false);
         ornament.setFrameCallbackType(frameCallbackType);
         ornament.setSelectFilterId(R.id.menu_camera_negative);
+
+        return ornament;
+    }
+
+    private static Ornament getGlasses() {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model model = new Ornament.Model();
+        model.setModelResId(R.raw.glasses_obj);
+        model.setScale(0.15f);
+        model.setOffset(0.01f, 0.05f, -0.1f);
+        model.setRotate(0, 0, 0);
+        model.setColor(Color.BLACK);
+
+        model.setNeedStreaming(true);
+        model.setStreamingViewWidth(800);
+        model.setStreamingViewHeight(800);
+        model.setStreamingPlaneWidth(6);
+        model.setStreamingPlaneHeight(6);
+        model.setStreamingScale(1.0f);
+        model.setStreamingOffsetX(0.01f);
+        model.setStreamingOffsetY(0.17f);
+        model.setStreamingOffsetZ(0.40f);
+        model.setAlphaMapResId(R.drawable.glasses_alpha);
+        model.setStreamingViewType(Ornament.STREAMING_WEB_VIEW);
+        model.setStreamingViewMirror(true);
+
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_glasses);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(model);
+        ornament.setModelList(modelList);
+        ornament.setFrameCallbackType(TextureController.FRAME_CALLBACK_DISABLE);
+        ornament.setToastMsg("镜面显示浏览器画面");
 
         return ornament;
     }
@@ -301,7 +337,7 @@ public class OrnamentFactory {
         model.setColor(NO_COLOR);
         model.setNeedSkinColor(needSkinColor);
 
-        ornament.setType(Ornament.TYPE_DYNAMIC);
+        ornament.setType(Ornament.MODEL_TYPE_DYNAMIC);
         ornament.setImgResId(imgResId);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(model);
@@ -321,7 +357,7 @@ public class OrnamentFactory {
         model.setColor(NO_COLOR);
         model.setNeedSkinColor(true);
 
-        ornament.setType(Ornament.TYPE_DYNAMIC);
+        ornament.setType(Ornament.MODEL_TYPE_DYNAMIC);
         ornament.setImgResId(0);
         List<Ornament.Model> modelList = new ArrayList<>();
         modelList.add(model);
