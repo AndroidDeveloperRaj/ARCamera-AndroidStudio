@@ -303,6 +303,9 @@ public class OrnamentFactory {
         model.setAlphaMapResId(R.drawable.glasses_alpha);
         model.setStreamingViewType(Ornament.STREAMING_WEB_VIEW);
         model.setStreamingViewMirror(true);
+        model.setStreamingPlaneTransparent(true);
+        model.setStreamingTextureInfluence(0.6f);
+        model.setColorInfluence(0.4f);
 
         ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_glasses);

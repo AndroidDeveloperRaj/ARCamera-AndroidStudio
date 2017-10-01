@@ -297,6 +297,9 @@ public class Ornament {
         private float streamingRotateY;
         private float streamingRotateZ;
         private boolean streamingViewMirror = false;
+        private boolean streamingPlaneTransparent = false;
+        private float streamingTextureInfluence = 1.0f;
+        private float ColorInfluence = 0;
         private int alphaMapResId = -1;
 
         public String getName() {
@@ -645,6 +648,30 @@ public class Ornament {
 
         public void setStreamingViewMirror(boolean streamingViewMirror) {
             this.streamingViewMirror = streamingViewMirror;
+        }
+
+        public boolean isStreamingPlaneTransparent() {
+            return streamingPlaneTransparent;
+        }
+
+        public void setStreamingPlaneTransparent(boolean streamingPlaneTransparent) {
+            this.streamingPlaneTransparent = streamingPlaneTransparent;
+        }
+
+        public float getStreamingTextureInfluence() {
+            return streamingTextureInfluence;
+        }
+
+        public void setStreamingTextureInfluence(float streamingTextureInfluence) {
+            this.streamingTextureInfluence = streamingTextureInfluence;
+        }
+
+        public float getColorInfluence() {
+            return ColorInfluence;
+        }
+
+        public void setColorInfluence(float colorInfluence) {
+            ColorInfluence = colorInfluence;
         }
 
         public int getAlphaMapResId() {

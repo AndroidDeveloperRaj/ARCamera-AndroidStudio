@@ -525,6 +525,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
                 float planeWidth = model.getStreamingPlaneWidth();
                 float planeHeight = model.getStreamingPlaneHeight();
                 Object3D streamingPlane = new Plane(planeWidth, planeHeight, 1, 1);
+                streamingPlane.setTransparent(model.isStreamingPlaneTransparent());
                 streamingPlane.setColor(0);
                 streamingPlane.setScale(model.getScale());
                 streamingPlane.setPosition(model.getStreamingOffsetX(), model.getStreamingOffsetY(),model.getStreamingOffsetZ());
@@ -533,8 +534,9 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
                 if (mStreamingTexture == null) {
                     mStreamingTexture = new StreamingTexture("viewTexture", this);
                 }
+                mStreamingTexture.setInfluence(model.getStreamingTextureInfluence());
                 Material material = new Material();
-                material.setColorInfluence(0);
+                material.setColorInfluence(model.getColorInfluence());
                 try {
                     material.addTexture(mStreamingTexture);
                 } catch (ATexture.TextureException e) {
