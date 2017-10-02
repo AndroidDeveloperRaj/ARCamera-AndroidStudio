@@ -40,5 +40,7 @@ Screenshot
 * [PROTAGONISTA](https://sketchfab.com/models/9834c0696cb24b81af6889adcacff391) by cirofelipelacerda
 * [Mirror](http://www.zeldacapital.com/3d.php)
 * [Nerd glasses](https://www.sharecg.com/v/69926/view/5/3D-Model/Nerd-glasses)
+* [Laptop](https://free3d.com/3d-model/puo-4281-14798.html)
+* [Table](https://www.reinerstilesets.de/3d-grafiken/3d-furniture/)
 
 > Written with [StackEdit](https://stackedit.io/).
