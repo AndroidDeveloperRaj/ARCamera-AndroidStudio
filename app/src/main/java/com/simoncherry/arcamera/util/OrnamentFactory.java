@@ -36,6 +36,7 @@ public class OrnamentFactory {
         ornaments.add(getMirror(TextureController.FRAME_CALLBACK_NO_FILTER));
         ornaments.add(getGlasses());
         ornaments.add(getLaptop());
+        ornaments.add(getCrystalBall());
         return ornaments;
     }
 
@@ -54,7 +55,6 @@ public class OrnamentFactory {
         model.setScale(0.002f);
         model.setOffset(0, -0.2f, 0.4f);
         model.setRotate(0.0f, 0.0f, 0.0f);
-        model.setColor(0xffe06666);
 
         ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_tiger);
@@ -73,7 +73,6 @@ public class OrnamentFactory {
         model.setScale(0.15f);
         model.setOffset(0, 0.01f, 0.0f);
         model.setRotate(0, 0, 0);
-        model.setColor(Color.BLACK);
 
         ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_v_mask);
@@ -131,7 +130,7 @@ public class OrnamentFactory {
         materialList.add(laserPlugins);
         materialList.add(spherePlugins);
 
-        ornament.setType(Ornament.MODEL_TYPE_BUILT_IN);
+        ornament.setType(Ornament.MODEL_TYPE_SHADER);
         ornament.setImgResId(R.drawable.ic_laser);
         ornament.setObject3DList(object3DList);
         ornament.setMaterialList(materialList);
@@ -221,13 +220,12 @@ public class OrnamentFactory {
         model.setScale(0.125f);
         model.setOffset(0, 0.05f, 0.5f);
         model.setRotate(0, 0, 0);
-        model.setColor(Color.BLACK);
 
         model.setNeedStreaming(true);
         model.setStreamingViewWidth(216);
         model.setStreamingViewHeight(384);
-        model.setStreamingPlaneWidth(6.25f);
-        model.setStreamingPlaneHeight(11.1f);
+        model.setStreamingModelWidth(6.25f);
+        model.setStreamingModelHeight(11.1f);
         model.setStreamingScale(1.0f);
         model.setStreamingOffsetY(0.1f);
         model.setStreamingOffsetZ(0.85f);
@@ -256,13 +254,12 @@ public class OrnamentFactory {
         model.setScale(0.35f);
         model.setOffset(0, 0, -0.5f);
         model.setRotate(0, 0, 0);
-        model.setColor(Color.BLACK);
 
         model.setNeedStreaming(true);
         model.setStreamingViewWidth(200);
         model.setStreamingViewHeight(200);
-        model.setStreamingPlaneWidth(3.5f);
-        model.setStreamingPlaneHeight(3.5f);
+        model.setStreamingModelWidth(3.5f);
+        model.setStreamingModelHeight(3.5f);
         model.setStreamingScale(1.0f);
         model.setStreamingOffsetX(0.03f);
         model.setStreamingOffsetY(0.05f);
@@ -290,21 +287,20 @@ public class OrnamentFactory {
         model.setScale(0.15f);
         model.setOffset(0.01f, 0.05f, -0.1f);
         model.setRotate(0, 0, 0);
-        model.setColor(Color.BLACK);
 
         model.setNeedStreaming(true);
         model.setStreamingViewWidth(800);
         model.setStreamingViewHeight(800);
-        model.setStreamingPlaneWidth(6);
-        model.setStreamingPlaneHeight(6);
+        model.setStreamingModelWidth(6);
+        model.setStreamingModelHeight(6);
         model.setStreamingScale(1.0f);
         model.setStreamingOffsetX(0.01f);
         model.setStreamingOffsetY(0.17f);
         model.setStreamingOffsetZ(0.40f);
         model.setAlphaMapResId(R.drawable.glasses_alpha);
-        model.setStreamingViewType(Ornament.STREAMING_WEB_VIEW);
+        model.setStreamingViewType(Ornament.Model.STREAMING_WEB_VIEW);
         model.setStreamingViewMirror(true);
-        model.setStreamingPlaneTransparent(true);
+        model.setStreamingModelTransparent(true);
         model.setStreamingTextureInfluence(0.6f);
         model.setColorInfluence(0.4f);
 
@@ -327,13 +323,12 @@ public class OrnamentFactory {
         model.setScale(0.2f);
         model.setOffset(0, -0.4f, 0.0f);
         model.setRotate(0, 0, -15);
-        model.setColor(Color.BLACK);
 
         model.setNeedStreaming(true);
         model.setStreamingViewWidth(450);
         model.setStreamingViewHeight(300);
-        model.setStreamingPlaneWidth(10.7f);
-        model.setStreamingPlaneHeight(7);
+        model.setStreamingModelWidth(10.7f);
+        model.setStreamingModelHeight(7);
         model.setStreamingScale(1.0f);
         model.setStreamingOffsetY(0.7f);
         model.setStreamingOffsetZ(0.0f);
@@ -344,7 +339,6 @@ public class OrnamentFactory {
         desk.setScale(0.225f);
         desk.setOffset(0, -0.5f, 0.0f);
         desk.setRotate(0, 0, -15);
-        desk.setColor(Color.BLACK);
 
         ornament.setType(Ornament.MODEL_TYPE_STATIC);
         ornament.setImgResId(R.drawable.ic_laptop);
@@ -356,6 +350,67 @@ public class OrnamentFactory {
         ornament.setEnableScale(false);
         ornament.setEnableTransition(false);
         ornament.setFrameCallbackType(TextureController.FRAME_CALLBACK_ONLY);
+
+        return ornament;
+    }
+
+    private static Ornament getCrystalBall() {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model baseRing = new Ornament.Model();
+        baseRing.setModelResId(R.raw.crystal_ball_base_ring_obj);
+        baseRing.setScale(0.15f);
+        baseRing.setOffset(0, -0.5f, 0.0f);
+        baseRing.setRotate(0, 0, 0);
+        baseRing.setColor(Color.YELLOW);
+        baseRing.setMaterialId(MaterialFactory.MATERIAL_SKY_CUBE);
+
+        Ornament.Model baseLeg = new Ornament.Model();
+        baseLeg.setModelResId(R.raw.crystal_ball_base_leg_obj);
+        baseLeg.setScale(0.15f);
+        baseLeg.setOffset(0, -0.5f, 0.0f);
+        baseLeg.setRotate(0, 0, 0);
+        baseLeg.setColor(Color.YELLOW);
+        baseLeg.setMaterialId(MaterialFactory.MATERIAL_SKY_CUBE);
+
+//        Ornament.Model crystalBall = new Ornament.Model();
+//        crystalBall.setBuildInType(Ornament.Model.BUILD_IN_SPHERE);
+//        crystalBall.setBuildInWidth(1);
+//        crystalBall.setBuildInHeight(1);
+//        crystalBall.setBuildInSegmentsW(24);
+//        crystalBall.setBuildInSegmentsH(24);
+//        crystalBall.setScale(0.7f);
+//        crystalBall.setOffset(0, 0.01f, 0);
+//        crystalBall.setRotate(0, 0, 0);
+//        crystalBall.setColor(Color.BLUE);
+//        crystalBall.setMaterialId(MaterialFactory.MATERIAL_FROST_CUBE);
+
+        baseRing.setNeedStreaming(true);
+        baseRing.setStreamingModelType(Ornament.Model.STREAMING_SPHERE_MODEL);
+        baseRing.setStreamingViewWidth(400);
+        baseRing.setStreamingViewHeight(400);
+        baseRing.setStreamingModelWidth(4.5f);
+        baseRing.setStreamingModelHeight(4.5f);
+        baseRing.setStreamingModelSegmentsW(24);
+        baseRing.setStreamingModelSegmentsH(24);
+        baseRing.setStreamingScale(1.0f);
+        baseRing.setStreamingOffsetX(0);
+        baseRing.setStreamingOffsetY(0);
+        baseRing.setStreamingOffsetZ(0);
+        baseRing.setStreamingViewMirror(true);
+        baseRing.setStreamingModelTransparent(true);
+        baseRing.setStreamingTextureInfluence(0.9f);
+        baseRing.setColorInfluence(0.1f);
+
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_crystal_ball);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(baseRing);
+        modelList.add(baseLeg);
+//        modelList.add(crystalBall);
+        ornament.setModelList(modelList);
+        ornament.setFrameCallbackType(TextureController.FRAME_CALLBACK_FILTER);
+        ornament.setSelectFilterId(R.id.menu_camera_negative);
 
         return ornament;
     }

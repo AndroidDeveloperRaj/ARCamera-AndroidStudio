@@ -2,6 +2,7 @@ package com.simoncherry.arcamera.model;
 
 import com.simoncherry.arcamera.R;
 import com.simoncherry.arcamera.gl.TextureController;
+import com.simoncherry.arcamera.util.OrnamentFactory;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.animation.Animation3D;
@@ -18,10 +19,7 @@ public class Ornament {
     public static final int MODEL_TYPE_NONE = -1;
     public static final int MODEL_TYPE_STATIC = 0;
     public static final int MODEL_TYPE_DYNAMIC = 1;
-    public static final int MODEL_TYPE_BUILT_IN = 2;
-
-    public static final int STREAMING_IMAGE_VIEW = 0;
-    public static final int STREAMING_WEB_VIEW = 1;
+    public static final int MODEL_TYPE_SHADER = 2;
 
     private int type = MODEL_TYPE_NONE;
     private int imgResId;
@@ -253,8 +251,19 @@ public class Ornament {
     }
 
     public static class Model {
+
+        public static final int STREAMING_IMAGE_VIEW = 0;
+        public static final int STREAMING_WEB_VIEW = 1;
+
+        public static final int STREAMING_PLANE_MODEL = 0;
+        public static final int STREAMING_SPHERE_MODEL = 1;
+
+        public static final int BUILD_IN_PLANE = 0;
+        public static final int BUILD_IN_CUBE = 1;
+        public static final int BUILD_IN_SPHERE = 2;
+
         private String name;
-        private int modelResId;
+        private int modelResId = -1;
         private float scale;
         private float offsetX;
         private float offsetY;
@@ -262,7 +271,7 @@ public class Ornament {
         private float rotateX;
         private float rotateY;
         private float rotateZ;
-        private int color;
+        private int color = OrnamentFactory.NO_COLOR;
         private List<Animation3D> animation3Ds;
         private int textureResId = -1;
         private String texturePath = null;
@@ -287,8 +296,11 @@ public class Ornament {
         private int streamingViewType = STREAMING_IMAGE_VIEW;
         private int streamingViewWidth;
         private int streamingViewHeight;
-        private float streamingPlaneWidth;
-        private float streamingPlaneHeight;
+        private int streamingModelType = STREAMING_PLANE_MODEL;
+        private float streamingModelWidth;
+        private float streamingModelHeight;
+        private int streamingModelSegmentsW = 1;
+        private int streamingModelSegmentsH = 1;
         private float streamingScale;
         private float streamingOffsetX;
         private float streamingOffsetY;
@@ -297,10 +309,17 @@ public class Ornament {
         private float streamingRotateY;
         private float streamingRotateZ;
         private boolean streamingViewMirror = false;
-        private boolean streamingPlaneTransparent = false;
+        private boolean streamingModelTransparent = false;
         private float streamingTextureInfluence = 1.0f;
         private float ColorInfluence = 0;
         private int alphaMapResId = -1;
+        // for build-in
+        private int buildInType = -1;
+        private float buildInWidth;
+        private float buildInHeight;
+        private int buildInSegmentsW;
+        private int buildInSegmentsH;
+        private int materialId = -1;
 
         public String getName() {
             return name;
@@ -570,20 +589,44 @@ public class Ornament {
             this.streamingViewHeight = streamingViewHeight;
         }
 
-        public float getStreamingPlaneWidth() {
-            return streamingPlaneWidth;
+        public int getStreamingModelType() {
+            return streamingModelType;
         }
 
-        public void setStreamingPlaneWidth(float streamingPlaneWidth) {
-            this.streamingPlaneWidth = streamingPlaneWidth;
+        public void setStreamingModelType(int streamingModelType) {
+            this.streamingModelType = streamingModelType;
         }
 
-        public float getStreamingPlaneHeight() {
-            return streamingPlaneHeight;
+        public float getStreamingModelWidth() {
+            return streamingModelWidth;
         }
 
-        public void setStreamingPlaneHeight(float streamingPlaneHeight) {
-            this.streamingPlaneHeight = streamingPlaneHeight;
+        public void setStreamingModelWidth(float streamingModelWidth) {
+            this.streamingModelWidth = streamingModelWidth;
+        }
+
+        public float getStreamingModelHeight() {
+            return streamingModelHeight;
+        }
+
+        public void setStreamingModelHeight(float streamingModelHeight) {
+            this.streamingModelHeight = streamingModelHeight;
+        }
+
+        public int getStreamingModelSegmentsW() {
+            return streamingModelSegmentsW;
+        }
+
+        public void setStreamingModelSegmentsW(int streamingModelSegmentsW) {
+            this.streamingModelSegmentsW = streamingModelSegmentsW;
+        }
+
+        public int getStreamingModelSegmentsH() {
+            return streamingModelSegmentsH;
+        }
+
+        public void setStreamingModelSegmentsH(int streamingModelSegmentsH) {
+            this.streamingModelSegmentsH = streamingModelSegmentsH;
         }
 
         public float getStreamingScale() {
@@ -650,12 +693,12 @@ public class Ornament {
             this.streamingViewMirror = streamingViewMirror;
         }
 
-        public boolean isStreamingPlaneTransparent() {
-            return streamingPlaneTransparent;
+        public boolean isStreamingModelTransparent() {
+            return streamingModelTransparent;
         }
 
-        public void setStreamingPlaneTransparent(boolean streamingPlaneTransparent) {
-            this.streamingPlaneTransparent = streamingPlaneTransparent;
+        public void setStreamingModelTransparent(boolean streamingModelTransparent) {
+            this.streamingModelTransparent = streamingModelTransparent;
         }
 
         public float getStreamingTextureInfluence() {
@@ -680,6 +723,54 @@ public class Ornament {
 
         public void setAlphaMapResId(int alphaMapResId) {
             this.alphaMapResId = alphaMapResId;
+        }
+
+        public int getBuildInType() {
+            return buildInType;
+        }
+
+        public void setBuildInType(int buildInType) {
+            this.buildInType = buildInType;
+        }
+
+        public float getBuildInWidth() {
+            return buildInWidth;
+        }
+
+        public void setBuildInWidth(float buildInWidth) {
+            this.buildInWidth = buildInWidth;
+        }
+
+        public float getBuildInHeight() {
+            return buildInHeight;
+        }
+
+        public void setBuildInHeight(float buildInHeight) {
+            this.buildInHeight = buildInHeight;
+        }
+
+        public int getBuildInSegmentsW() {
+            return buildInSegmentsW;
+        }
+
+        public void setBuildInSegmentsW(int buildInSegmentsW) {
+            this.buildInSegmentsW = buildInSegmentsW;
+        }
+
+        public int getBuildInSegmentsH() {
+            return buildInSegmentsH;
+        }
+
+        public void setBuildInSegmentsH(int buildInSegmentsH) {
+            this.buildInSegmentsH = buildInSegmentsH;
+        }
+
+        public int getMaterialId() {
+            return materialId;
+        }
+
+        public void setMaterialId(int materialId) {
+            this.materialId = materialId;
         }
     }
 }

@@ -440,9 +440,9 @@ public class ARCamActivity extends AppCompatActivity implements ARCamContract.Vi
                 if (model != null && model.isNeedStreaming()) {
 
                     int streamingViewType = model.getStreamingViewType();
-                    if (streamingViewType == Ornament.STREAMING_IMAGE_VIEW) {
+                    if (streamingViewType == Ornament.Model.STREAMING_IMAGE_VIEW) {
                         handleStreamingTextureImageView();
-                    } else if (streamingViewType == Ornament.STREAMING_WEB_VIEW) {
+                    } else if (streamingViewType == Ornament.Model.STREAMING_WEB_VIEW) {
                         handleStreamingTextureWebView();
                     }
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(

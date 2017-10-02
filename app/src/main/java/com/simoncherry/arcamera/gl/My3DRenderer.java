@@ -20,11 +20,13 @@ import com.simoncherry.arcamera.model.Ornament;
 import com.simoncherry.arcamera.rajawali.MyFragmentShader;
 import com.simoncherry.arcamera.rajawali.MyVertexShader;
 import com.simoncherry.arcamera.util.BitmapUtils;
+import com.simoncherry.arcamera.util.MaterialFactory;
 import com.simoncherry.arcamera.util.OrnamentFactory;
 
 import org.rajawali3d.Geometry3D;
 import org.rajawali3d.Object3D;
 import org.rajawali3d.loader.LoaderOBJ;
+import org.rajawali3d.loader.ParsingException;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.plugins.IMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
@@ -32,7 +34,9 @@ import org.rajawali3d.materials.textures.AlphaMapTexture;
 import org.rajawali3d.materials.textures.StreamingTexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
+import org.rajawali3d.primitives.Cube;
 import org.rajawali3d.primitives.Plane;
+import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.util.ObjectColorPicker;
 import org.rajawali3d.util.OnObjectPickedListener;
@@ -73,7 +77,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
     private List<Geometry3D> mGeometry3DList = new ArrayList<>();
     private List<DynamicPoint> mPoints = new ArrayList<>();
     private boolean mIsChanging = false;
-    // 用于Rajawali内置模型
+    // 用于ShaderMaterial模型
     private List<Material> mMaterialList = new ArrayList<>();
     private float mMaterialTime = 0;
     private ObjectColorPicker mPicker;
@@ -136,7 +140,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
 
     // 设置3D模型的平移
     public void setTransition(float x, float y, float z) {
-        if (mModelType == Ornament.MODEL_TYPE_STATIC || mModelType == Ornament.MODEL_TYPE_BUILT_IN) {
+        if (mModelType == Ornament.MODEL_TYPE_STATIC || mModelType == Ornament.MODEL_TYPE_SHADER) {
             mTransX = x;
             mTransY = y;
             setScale(z);
@@ -191,7 +195,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             loadOrnament();
         }
 
-        if (mModelType == Ornament.MODEL_TYPE_STATIC || mModelType == Ornament.MODEL_TYPE_BUILT_IN) {
+        if (mModelType == Ornament.MODEL_TYPE_STATIC || mModelType == Ornament.MODEL_TYPE_SHADER) {
             if (mOrnamentModel != null) {
                 if (mOrnamentModel.isEnableRotation()) {
                     // 处理3D模型的旋转
@@ -388,12 +392,12 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             if (mOrnamentModel != null) {
                 mModelType = mOrnamentModel.getType();
                 switch (mModelType) {
-                    case Ornament.MODEL_TYPE_BUILT_IN:
-                        loadBuildInModel();
+                    case Ornament.MODEL_TYPE_SHADER:
+                        loadShaderMaterialModel();
                         break;
                     case Ornament.MODEL_TYPE_STATIC:
                     case Ornament.MODEL_TYPE_DYNAMIC:
-                        loadExtraModel();
+                        loadNormalMaterialModel();
                         initOrnamentParams();
                         break;
                 }
@@ -409,7 +413,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
         }
     }
 
-    private void loadBuildInModel() {
+    private void loadShaderMaterialModel() {
         try {
             List<Object3D> object3DList = mOrnamentModel.getObject3DList();
             List<List<IMaterialPlugin>> materialList = mOrnamentModel.getMaterialList();
@@ -448,7 +452,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
         }
     }
 
-    private void loadExtraModel() {
+    private void loadNormalMaterialModel() {
         try {
             List<Ornament.Model> modelList = mOrnamentModel.getModelList();
             if (modelList != null && modelList.size() > 0) {
@@ -475,83 +479,23 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
 
     private Object3D loadStaticModel(Ornament.Model model) {
         try {
+            Object3D object3D;
             int modelResId = model.getModelResId();
-            LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(), mTextureManager, modelResId);
-            objParser.parse();
-            Object3D object3D = objParser.getParsedObject();
-
-            String name = model.getName();
-            object3D.setName(name == null ? "" : name);
-            object3D.setScale(model.getScale());
-            object3D.setPosition(model.getOffsetX(), model.getOffsetY(), model.getOffsetZ());
-            object3D.setRotation(model.getRotateX(), model.getRotateY(), model.getRotateZ());
-
-            int textureResId = model.getTextureResId();
-            if (textureResId > 0) {
-                ATexture texture = object3D.getMaterial().getTextureList().get(0);
-                object3D.getMaterial().removeTexture(texture);
-
-                Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), textureResId);
-                if (bitmap != null) {
-                    mIsChanging = true;
-                    // 调整肤色
-                    if (model.isNeedSkinColor()) {
-                        bitmap = changeSkinColor(bitmap, mSkinColor);
-                    }
-                    object3D.getMaterial().addTexture(new Texture("canvas", bitmap));
-                    mIsChanging = false;
-                }
+            int buildInType = model.getBuildInType();
+            if (modelResId != -1) {
+                object3D = getExternalModel(modelResId);
+            } else if (buildInType != -1) {
+                object3D = getBuildInModel(model, buildInType);
+            } else {
+                throw new RuntimeException("invalid object3d");
             }
 
-            int color = model.getColor();
-            if (color != OrnamentFactory.NO_COLOR) {
-                Material material = object3D.getMaterial();
-                if (material == null) {
-                    material = new Material();
-                }
-                material.setColor(color);
-                object3D.setMaterial(material);
-            }
-
-            if (model.isNeedObjectPick()) {
-                if (mPicker == null) {
-                    mPicker = new ObjectColorPicker(this);
-                    mPicker.setOnObjectPickedListener(this);
-                }
-                mPicker.registerObject(object3D);
-            }
-
-            if (model.isNeedStreaming()) {
-                float planeWidth = model.getStreamingPlaneWidth();
-                float planeHeight = model.getStreamingPlaneHeight();
-                Object3D streamingPlane = new Plane(planeWidth, planeHeight, 1, 1);
-                streamingPlane.setTransparent(model.isStreamingPlaneTransparent());
-                streamingPlane.setColor(0);
-                streamingPlane.setScale(model.getScale());
-                streamingPlane.setPosition(model.getStreamingOffsetX(), model.getStreamingOffsetY(),model.getStreamingOffsetZ());
-                streamingPlane.setRotation(model.getStreamingRotateX(), model.getStreamingRotateY(), model.getStreamingRotateZ());
-                streamingPlane.setRenderChildrenAsBatch(true);
-                if (mStreamingTexture == null) {
-                    mStreamingTexture = new StreamingTexture("viewTexture", this);
-                }
-                mStreamingTexture.setInfluence(model.getStreamingTextureInfluence());
-                Material material = new Material();
-                material.setColorInfluence(model.getColorInfluence());
-                try {
-                    material.addTexture(mStreamingTexture);
-                } catch (ATexture.TextureException e) {
-                    e.printStackTrace();
-                }
-
-                if (model.getAlphaMapResId() > 0) {
-                    material.addTexture(new AlphaMapTexture("alphaMapTex", model.getAlphaMapResId()));
-                }
-                streamingPlane.setMaterial(material);
-                mContainer.addChild(streamingPlane);
-                mObject3DList.add(streamingPlane);
-
-                mIsStreamingViewMirror = model.isStreamingViewMirror();
-            }
+            setModelBaseParams(model, object3D);
+            setModelTexture(model, object3D);
+            setModelMaterial(model, object3D);
+            setModelColor(model, object3D);
+            handleObjectPicking(model, object3D);
+            handleStreamingTexture(model);
 
             return object3D;
 
@@ -560,6 +504,126 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
         }
 
         return null;
+    }
+
+    private Object3D getExternalModel(int modelResId) throws ParsingException {
+        LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(), mTextureManager, modelResId);
+        objParser.parse();
+        return objParser.getParsedObject();
+    }
+
+    private Object3D getBuildInModel(Ornament.Model model, int buildInType) {
+        switch (buildInType) {
+            case Ornament.Model.BUILD_IN_PLANE:
+                return new Plane(model.getBuildInWidth(), model.getBuildInHeight(),
+                        model.getBuildInSegmentsW(), model.getBuildInSegmentsH());
+            case Ornament.Model.BUILD_IN_CUBE:
+                return new Cube(model.getBuildInWidth());
+            case Ornament.Model.BUILD_IN_SPHERE:
+                return new Sphere(model.getBuildInWidth(),
+                        model.getBuildInSegmentsW(), model.getBuildInSegmentsH());
+            default:
+                throw new RuntimeException("invalid object3d");
+        }
+    }
+
+    private void setModelBaseParams(Ornament.Model model, Object3D object3D) {
+        String name = model.getName();
+        object3D.setName(name == null ? "" : name);
+        object3D.setScale(model.getScale());
+        object3D.setPosition(model.getOffsetX(), model.getOffsetY(), model.getOffsetZ());
+        object3D.setRotation(model.getRotateX(), model.getRotateY(), model.getRotateZ());
+    }
+
+    private void setModelTexture(Ornament.Model model, Object3D object3D) throws ATexture.TextureException {
+        int textureResId = model.getTextureResId();
+        if (textureResId > 0) {
+            ATexture texture = object3D.getMaterial().getTextureList().get(0);
+            object3D.getMaterial().removeTexture(texture);
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), textureResId);
+            if (bitmap != null) {
+                mIsChanging = true;
+                // 调整肤色
+                if (model.isNeedSkinColor()) {
+                    bitmap = changeSkinColor(bitmap, mSkinColor);
+                }
+                object3D.getMaterial().addTexture(new Texture("canvas", bitmap));
+                mIsChanging = false;
+            }
+        }
+    }
+
+    private void setModelMaterial(Ornament.Model model, Object3D object3D) {
+        int materialId = model.getMaterialId();
+        if (materialId > -1) {
+            object3D.setMaterial(MaterialFactory.getMaterialById(materialId));
+        }
+    }
+
+    private void setModelColor(Ornament.Model model, Object3D object3D) {
+        int color = model.getColor();
+        if (color != OrnamentFactory.NO_COLOR) {
+            object3D.getMaterial().setColor(color);
+        }
+    }
+
+    private void handleObjectPicking(Ornament.Model model, Object3D object3D) {
+        if (model.isNeedObjectPick()) {
+            if (mPicker == null) {
+                mPicker = new ObjectColorPicker(this);
+                mPicker.setOnObjectPickedListener(this);
+            }
+            mPicker.registerObject(object3D);
+        }
+    }
+
+    private void handleStreamingTexture(Ornament.Model model) throws ATexture.TextureException {
+        if (model.isNeedStreaming()) {
+            Object3D streamingModel;
+            int modelType = model.getStreamingModelType();
+            float modelWidth = model.getStreamingModelWidth();
+            float modelHeight = model.getStreamingModelHeight();
+            int modelSegmentsW = model.getStreamingModelSegmentsW();
+            int modelSegmentsH = model.getStreamingModelSegmentsH();
+            switch (modelType) {
+                case Ornament.Model.STREAMING_PLANE_MODEL:
+                    streamingModel = new Plane(modelWidth, modelHeight, modelSegmentsW, modelSegmentsH);
+                    break;
+                case Ornament.Model.STREAMING_SPHERE_MODEL:
+                    streamingModel = new Sphere(modelWidth, modelSegmentsW, modelSegmentsH);
+                    break;
+                default:
+                    throw new RuntimeException("invalid streaming model");
+            }
+
+            streamingModel.setTransparent(model.isStreamingModelTransparent());
+            streamingModel.setColor(0);
+            streamingModel.setScale(model.getScale());
+            streamingModel.setPosition(model.getStreamingOffsetX(), model.getStreamingOffsetY(),model.getStreamingOffsetZ());
+            streamingModel.setRotation(model.getStreamingRotateX(), model.getStreamingRotateY(), model.getStreamingRotateZ());
+            streamingModel.setRenderChildrenAsBatch(true);
+            if (mStreamingTexture == null) {
+                mStreamingTexture = new StreamingTexture("viewTexture", this);
+            }
+            mStreamingTexture.setInfluence(model.getStreamingTextureInfluence());
+            Material material = new Material();
+            material.setColorInfluence(model.getColorInfluence());
+            try {
+                material.addTexture(mStreamingTexture);
+            } catch (ATexture.TextureException e) {
+                e.printStackTrace();
+            }
+
+            if (model.getAlphaMapResId() > 0) {
+                material.addTexture(new AlphaMapTexture("alphaMapTex", model.getAlphaMapResId()));
+            }
+            streamingModel.setMaterial(material);
+            mContainer.addChild(streamingModel);
+            mObject3DList.add(streamingModel);
+
+            mIsStreamingViewMirror = model.isStreamingViewMirror();
+        }
     }
 
     private Object3D loadDynamicModel(Ornament.Model model) {
