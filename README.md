@@ -42,5 +42,6 @@ Screenshot
 * [Nerd glasses](https://www.sharecg.com/v/69926/view/5/3D-Model/Nerd-glasses)
 * [Laptop](https://free3d.com/3d-model/puo-4281-14798.html)
 * [Table](https://www.reinerstilesets.de/3d-grafiken/3d-furniture/)
+* [Crystal Ball](http://www.sharecg.com/v/65038/related/11/Poser/Silver-Cat-Halloween-props)
 
 > Written with [StackEdit](https://stackedit.io/).
