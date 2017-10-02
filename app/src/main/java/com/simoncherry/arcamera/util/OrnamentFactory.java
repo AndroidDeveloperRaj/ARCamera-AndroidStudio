@@ -32,9 +32,10 @@ public class OrnamentFactory {
         ornaments.add(getCamera());
         ornaments.add(getIronMan());
         ornaments.add(getMobile());
-        ornaments.add(getMirror(TextureController.FRAME_ONLY_CALLBACK_FILTER));
+        ornaments.add(getMirror(TextureController.FRAME_CALLBACK_FILTER));
         ornaments.add(getMirror(TextureController.FRAME_CALLBACK_NO_FILTER));
         ornaments.add(getGlasses());
+        ornaments.add(getLaptop());
         return ornaments;
     }
 
@@ -314,6 +315,47 @@ public class OrnamentFactory {
         ornament.setModelList(modelList);
         ornament.setFrameCallbackType(TextureController.FRAME_CALLBACK_DISABLE);
         ornament.setToastMsg("镜面显示浏览器画面");
+
+        return ornament;
+    }
+
+    private static Ornament getLaptop() {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model model = new Ornament.Model();
+        model.setModelResId(R.raw.laptop_obj);
+        model.setScale(0.2f);
+        model.setOffset(0, -0.4f, 0.0f);
+        model.setRotate(0, 0, -15);
+        model.setColor(Color.BLACK);
+
+        model.setNeedStreaming(true);
+        model.setStreamingViewWidth(450);
+        model.setStreamingViewHeight(300);
+        model.setStreamingPlaneWidth(10.7f);
+        model.setStreamingPlaneHeight(7);
+        model.setStreamingScale(1.0f);
+        model.setStreamingOffsetY(0.7f);
+        model.setStreamingOffsetZ(0.0f);
+        model.setStreamingRotateZ(-15);
+
+        Ornament.Model desk = new Ornament.Model();
+        desk.setModelResId(R.raw.desk_obj);
+        desk.setScale(0.225f);
+        desk.setOffset(0, -0.5f, 0.0f);
+        desk.setRotate(0, 0, -15);
+        desk.setColor(Color.BLACK);
+
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_laptop);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(model);
+        modelList.add(desk);
+        ornament.setModelList(modelList);
+        ornament.setEnableRotation(false);
+        ornament.setEnableScale(false);
+        ornament.setEnableTransition(false);
+        ornament.setFrameCallbackType(TextureController.FRAME_CALLBACK_ONLY);
 
         return ornament;
     }

@@ -47,18 +47,19 @@ public class TextureController implements GLSurfaceView.Renderer {
     private int mShowType = MatrixUtils.TYPE_CENTER_CROP;         // 输出到屏幕上的方式
     private int mDirectionFlag = -1;
 
-    private boolean isRecord = false;                             //录像flag
-    private boolean isShoot = false;                              //一次拍摄flag
+    private boolean isRecord = false;                             // 录像flag
+    private boolean isShoot = false;                              // 一次拍摄flag
     private boolean isNeedFrame = false;
-    private ByteBuffer[] outPutBuffer = new ByteBuffer[3];      //用于存储回调数据的buffer
-    private FrameCallback mFrameCallback;                       //回调
-    private int frameCallbackWidth, frameCallbackHeight;        //回调数据的宽高
-    private int indexOutput=0;                                  //回调数据使用的buffer索引
+    private ByteBuffer[] outPutBuffer = new ByteBuffer[3];        // 用于存储回调数据的buffer
+    private FrameCallback mFrameCallback;                         // 回调
+    private int frameCallbackWidth, frameCallbackHeight;          // 回调数据的宽高
+    private int indexOutput=0;                                    // 回调数据使用的buffer索引
 
-    public static final int FRAME_CALLBACK_DISABLE = -1;
-    public static final int FRAME_CALLBACK_DEFAULT = 0;
-    public static final int FRAME_CALLBACK_NO_FILTER = 1;
-    public static final int FRAME_ONLY_CALLBACK_FILTER = 2;
+    public static final int FRAME_CALLBACK_DEFAULT = 0;           // 预览和FrameCallback均应用滤镜效果
+    public static final int FRAME_CALLBACK_NO_FILTER = 1;         // 预览有滤镜效果，FrameCallback没有
+    public static final int FRAME_CALLBACK_FILTER = 2;            // 预览没有滤镜效果，FrameCallback有
+    public static final int FRAME_CALLBACK_DISABLE = 3;           // 只有预览，禁用FrameCallback
+    public static final int FRAME_CALLBACK_ONLY = 4;              // 禁用预览，只有FrameCallback
 
     private int mFrameCallbackType = FRAME_CALLBACK_DEFAULT;
 
@@ -180,12 +181,19 @@ public class TextureController implements GLSurfaceView.Renderer {
             GLES20.glViewport(0, 0, mWindowSize.x, mWindowSize.y);
             mShowFilter.setMatrix(SM);
 
-//            mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
-            if (mFrameCallbackType == FRAME_CALLBACK_DEFAULT || mFrameCallbackType == FRAME_CALLBACK_NO_FILTER) {
-                mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
-            } else if (mFrameCallbackType == FRAME_ONLY_CALLBACK_FILTER) {
-                mShowFilter.setTextureId(mEffectFilter.getOutputTexture());
+            switch (mFrameCallbackType) {
+                case FRAME_CALLBACK_DEFAULT:
+                case FRAME_CALLBACK_NO_FILTER:
+                    mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
+                    break;
+                case FRAME_CALLBACK_FILTER:
+                    mShowFilter.setTextureId(mEffectFilter.getOutputTexture());
+                    break;
+                case FRAME_CALLBACK_ONLY:
+                    mShowFilter.setTextureId(0);
+                    break;
             }
+
             mShowFilter.draw();
 
             if(mRenderer != null){
@@ -289,10 +297,15 @@ public class TextureController implements GLSurfaceView.Renderer {
             GLES20.glViewport(0, 0, frameCallbackWidth, frameCallbackHeight);
             EasyGlUtils.bindFrameTexture(mExportFrame[0],mExportTexture[0]);
 
-            if (mFrameCallbackType == FRAME_CALLBACK_DEFAULT || mFrameCallbackType == FRAME_ONLY_CALLBACK_FILTER) {
-                mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
-            } else if (mFrameCallbackType == FRAME_CALLBACK_NO_FILTER) {
-                mShowFilter.setTextureId(mEffectFilter.getOutputTexture());
+            switch (mFrameCallbackType) {
+                case FRAME_CALLBACK_DEFAULT:
+                case FRAME_CALLBACK_FILTER:
+                case FRAME_CALLBACK_ONLY:
+                    mShowFilter.setTextureId(mGroupFilter.getOutputTexture());
+                    break;
+                case FRAME_CALLBACK_NO_FILTER:
+                    mShowFilter.setTextureId(mEffectFilter.getOutputTexture());
+                    break;
             }
 
             mShowFilter.setMatrix(callbackOM);
