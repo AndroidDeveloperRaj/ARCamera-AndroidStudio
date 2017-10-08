@@ -43,5 +43,7 @@ Screenshot
 * [Laptop](https://free3d.com/3d-model/puo-4281-14798.html)
 * [Table](https://www.reinerstilesets.de/3d-grafiken/3d-furniture/)
 * [Crystal Ball](http://www.sharecg.com/v/65038/related/11/Poser/Silver-Cat-Halloween-props)
+* [Microphone](https://www.models-resource.com/pc_computer/batmanarkhamknight/model/19960/)
+* [Sun Glasses](https://sketchfab.com/models/30a3f18ead9e452f9ab2c32151e7b2f6#) by dez_z
 
 > Written with [StackEdit](https://stackedit.io/).
