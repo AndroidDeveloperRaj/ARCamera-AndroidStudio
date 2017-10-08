@@ -27,6 +27,7 @@ public class Ornament {
     private List<Object3D> object3DList;
     private List<List<IMaterialPlugin>> materialList;
     private float timeStep;
+    private float timePeriod;
     private float scale;
     private float offsetX;
     private float offsetY;
@@ -96,6 +97,14 @@ public class Ornament {
 
     public void setTimeStep(float timeStep) {
         this.timeStep = timeStep;
+    }
+
+    public float getTimePeriod() {
+        return timePeriod;
+    }
+
+    public void setTimePeriod(float timePeriod) {
+        this.timePeriod = timePeriod;
     }
 
     public float getScale() {

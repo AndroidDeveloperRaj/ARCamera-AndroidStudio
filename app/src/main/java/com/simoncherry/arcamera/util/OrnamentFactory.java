@@ -37,6 +37,7 @@ public class OrnamentFactory {
         ornaments.add(getGlasses());
         ornaments.add(getLaptop());
         ornaments.add(getCrystalBall());
+        ornaments.add(getInterview());
         return ornaments;
     }
 
@@ -172,6 +173,7 @@ public class OrnamentFactory {
         ornament.setVertResId(R.raw.flash_out_vert_shader);
         ornament.setFragResId(R.raw.flash_out_frag_shader);
         ornament.setTimeStep(0.01f);
+        ornament.setTimePeriod(0.125f);
         ornament.setPlaneOffsetZ(0.6f);
 
         return ornament;
@@ -411,6 +413,52 @@ public class OrnamentFactory {
         ornament.setModelList(modelList);
         ornament.setFrameCallbackType(TextureController.FRAME_CALLBACK_FILTER);
         ornament.setSelectFilterId(R.id.menu_camera_negative);
+
+        return ornament;
+    }
+
+    private static Ornament getInterview() {
+        Ornament ornament = new Ornament();
+
+        Ornament.Model glasses = new Ornament.Model();
+        glasses.setModelResId(R.raw.sun_glasses_obj);
+        glasses.setScale(0.15f);
+        glasses.setOffset(0.015f, 0.1f, -0.1f);
+        glasses.setRotate(0, 0, 0);
+
+        Ornament.Model mic1 = new Ornament.Model();
+        mic1.setModelResId(R.raw.microphone_obj);
+        mic1.setScale(0.17f);
+        mic1.setOffset(0, -0.1f, 0);
+        mic1.setRotate(0, 0, 0);
+
+        Ornament.Model mic2 = new Ornament.Model();
+        mic2.setModelResId(R.raw.microphone_obj);
+        mic2.setScale(0.17f);
+        mic2.setOffset(-0.025f, 0.05f, -0.02f);
+        mic2.setRotate(0, 30, 0);
+
+        Ornament.Model mic3 = new Ornament.Model();
+        mic3.setModelResId(R.raw.microphone_obj);
+        mic3.setScale(0.17f);
+        mic3.setOffset(0.025f, 0.015f, -0.01f);
+        mic3.setRotate(0, -30, 0);
+
+        ornament.setType(Ornament.MODEL_TYPE_STATIC);
+        ornament.setImgResId(R.drawable.ic_interview);
+        List<Ornament.Model> modelList = new ArrayList<>();
+        modelList.add(glasses);
+        modelList.add(mic1);
+        modelList.add(mic2);
+        modelList.add(mic3);
+        ornament.setModelList(modelList);
+
+        ornament.setHasShaderPlane(true);
+        ornament.setVertResId(R.raw.flash_light_vert_shader);
+        ornament.setFragResId(R.raw.flash_light_frag_shader);
+        ornament.setTimeStep(0.05f);
+        ornament.setTimePeriod(0.5f);
+        ornament.setPlaneOffsetZ(0);
 
         return ornament;
     }

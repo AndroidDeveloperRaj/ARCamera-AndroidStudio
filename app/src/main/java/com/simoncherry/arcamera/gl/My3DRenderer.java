@@ -263,7 +263,7 @@ public class My3DRenderer extends Renderer implements OnObjectPickedListener, St
             mMaterialTime += mOrnamentModel.getTimeStep();
             mCustomMaterial.setTime(mMaterialTime);
 
-            if (mMaterialTime > 0.125f) {
+            if (mMaterialTime > mOrnamentModel.getTimePeriod()) {
                 mMyFragmentShader.setFlag(0);
             }
 
